@@ -147,19 +147,19 @@ administrator tokens or make final manual-review decisions.
 
 ## Boundary Decisions
 
-| Concern | Decision |
-|---|---|
-| `AuthModule` name | Preserve initially; decide an intentional rename to `AuthenticationModule` during Phase 1 rather than create a duplicate |
-| `PasswordModule` name | Preserve initially; pluralization alone does not justify churn |
-| `OtpModule` | Reassess in Phase 1; split into email verification or step-up only when supported by a real workflow |
-| Root starter endpoint | Replace with explicit health routes in Phase 1 |
-| Fixed port `3000` | Preserve |
-| `@mucyora/db` | Preserve as the only database package |
-| Platform ID | Retain only after a consumer/business requirement is documented |
-| FIN/foreign identity | Exclude from Auth; legacy schema fields are a database migration decision |
-| User profile/preferences/activity | Exclude and leave to `api/user` |
-| Admin authentication | Exclude and leave to `api/admin` |
-| Signing/certificates | Exclude and leave to `api/signature` |
+| Concern                           | Decision                                                                                                                 |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `AuthModule` name                 | Preserve initially; decide an intentional rename to `AuthenticationModule` during Phase 1 rather than create a duplicate |
+| `PasswordModule` name             | Preserve initially; pluralization alone does not justify churn                                                           |
+| `OtpModule`                       | Reassess in Phase 1; split into email verification or step-up only when supported by a real workflow                     |
+| Root starter endpoint             | Replace with explicit health routes in Phase 1                                                                           |
+| Fixed port `3000`                 | Preserve                                                                                                                 |
+| `@mucyora/db`                     | Preserve as the only database package                                                                                    |
+| Platform ID                       | Retain only after a consumer/business requirement is documented                                                          |
+| FIN/foreign identity              | Exclude from Auth; legacy schema fields are a database migration decision                                                |
+| User profile/preferences/activity | Exclude and leave to `api/user`                                                                                          |
+| Admin authentication              | Exclude and leave to `api/admin`                                                                                         |
+| Signing/certificates              | Exclude and leave to `api/signature`                                                                                     |
 
 ## Performance Findings
 
@@ -199,22 +199,22 @@ No reference credential, token, identity value, or secret was copied.
 
 ## Phase-by-Phase Change Map
 
-| Phase | Planned change | Preserved baseline | Primary prerequisite or risk |
-|---:|---|---|---|
-| 0 | Audit and proposals only | Current scaffold and docs | Complete |
-| 1 | Secure Nest foundation, probes, boundary checks, DB lifecycle, CI/docs | Fixed port, packages, module shells | Do not add business endpoints |
-| 2 | Consume approved DB contract and add crypto/security primitives | `@mucyora/db` factory | Requires separately authorized `api/db` migration work |
-| 3 | Typed NIDA adapter, minimized mapping, resilience and mock tests | Registration module shell | Distributed cache and safe secret configuration |
-| 4 | Citizen lookup and registration challenge | Complete | Protected endpoint, encrypted short-lived challenge, distributed abuse controls, and anti-enumeration |
-| 5 | Atomic registration and email verification | Complete | Argon2id credential, encrypted identity, versioned consents, digest tokens, outbox mail, verification and resend |
-| 6 | Login, asymmetric JWT/JWKS, refresh/session management | Auth and sessions shells | Consumer migration from shared JWT secret |
-| 7 | Password recovery/change | Password shell | Password reset/session revocation contract |
-| 8 | Attempt-bound biometric verification | Identity-verification shell, Engine service | Hardened Engine/liveness and media contracts |
-| 9 | Limited-to-full session upgrade | Phase 6 and Phase 8 state | Atomic, idempotent upgrade |
-| 10 | Purpose-bound step-up verification | Verification infrastructure | User/Signature contract tests |
-| 11 | Outbox, cleanup, reconciliation, retention | Durable records from earlier phases | Distributed job coordination |
-| 12 | Load, resilience, query-plan, and SLO validation | Instrumented runtime | Production-like non-production environment |
-| 13 | Final threat review and release package | All prior phases | No deployment without separate command |
+| Phase | Planned change                                                         | Preserved baseline                          | Primary prerequisite or risk                                                                                     |
+| ----: | ---------------------------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+|     0 | Audit and proposals only                                               | Current scaffold and docs                   | Complete                                                                                                         |
+|     1 | Secure Nest foundation, probes, boundary checks, DB lifecycle, CI/docs | Fixed port, packages, module shells         | Do not add business endpoints                                                                                    |
+|     2 | Consume approved DB contract and add crypto/security primitives        | `@mucyora/db` factory                       | Requires separately authorized `api/db` migration work                                                           |
+|     3 | Typed NIDA adapter, minimized mapping, resilience and mock tests       | Registration module shell                   | Distributed cache and safe secret configuration                                                                  |
+|     4 | Citizen lookup and registration challenge                              | Complete                                    | Protected endpoint, encrypted short-lived challenge, distributed abuse controls, and anti-enumeration            |
+|     5 | Atomic registration and email verification                             | Complete                                    | Argon2id credential, encrypted identity, versioned consents, digest tokens, outbox mail, verification and resend |
+|     6 | Login, asymmetric JWT/JWKS, refresh/session management                 | Complete                                    | Limited/full gates, RS256/JWKS, refresh rotation/reuse, cookie/native transport, session revocation              |
+|     7 | Password recovery/change                                               | Password shell                              | Password reset/session revocation contract                                                                       |
+|     8 | Attempt-bound biometric verification                                   | Identity-verification shell, Engine service | Hardened Engine/liveness and media contracts                                                                     |
+|     9 | Limited-to-full session upgrade                                        | Phase 6 and Phase 8 state                   | Atomic, idempotent upgrade                                                                                       |
+|    10 | Purpose-bound step-up verification                                     | Verification infrastructure                 | User/Signature contract tests                                                                                    |
+|    11 | Outbox, cleanup, reconciliation, retention                             | Durable records from earlier phases         | Distributed job coordination                                                                                     |
+|    12 | Load, resilience, query-plan, and SLO validation                       | Instrumented runtime                        | Production-like non-production environment                                                                       |
+|    13 | Final threat review and release package                                | All prior phases                            | No deployment without separate command                                                                           |
 
 ## Phase 0 Exit Decision
 
