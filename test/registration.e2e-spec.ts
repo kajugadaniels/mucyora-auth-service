@@ -5,11 +5,16 @@ import { App } from 'supertest/types';
 
 import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/common/database/database.service';
+import { EmailVerificationService } from '../src/modules/email-verification/email-verification.service';
 import { CitizenLookupService } from '../src/modules/registration/citizen-lookup.service';
+import { RegistrationService } from '../src/modules/registration/registration.service';
 
 describe('citizen registration initiation (e2e)', () => {
   let app: INestApplication<App>;
   const initiate = jest.fn();
+  const register = jest.fn();
+  const verify = jest.fn();
+  const resend = jest.fn();
 
   beforeEach(async () => {
     initiate.mockResolvedValue({
@@ -23,6 +28,18 @@ describe('citizen registration initiation (e2e)', () => {
         sex: 'F',
       },
     });
+    register.mockResolvedValue({
+      userReference: 'user-1',
+      maskedEmail: 'us**@example.com',
+      emailVerificationRequired: true,
+      identityVerificationRequired: true,
+      nextAction: 'VERIFY_EMAIL',
+    });
+    verify.mockResolvedValue({
+      status: 'verified',
+      nextAction: 'IDENTITY_VERIFICATION',
+    });
+    resend.mockResolvedValue({ status: 'accepted' });
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -30,6 +47,10 @@ describe('citizen registration initiation (e2e)', () => {
       .useValue({ isReady: jest.fn().mockResolvedValue(true) })
       .overrideProvider(CitizenLookupService)
       .useValue({ initiate })
+      .overrideProvider(RegistrationService)
+      .useValue({ register })
+      .overrideProvider(EmailVerificationService)
+      .useValue({ verify, resend })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -86,8 +107,56 @@ describe('citizen registration initiation (e2e)', () => {
       .expect(400);
   });
 
+  it('accepts the Phase 5 atomic registration contract', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/registration')
+      .set('idempotency-key', 'registration-request-0001')
+      .send({
+        registrationChallengeToken: `mrc1.${'A'.repeat(100)}`,
+        email: 'user@example.com',
+        password: 'Maple river lantern voyage 47!',
+        consents: [
+          { type: 'TERMS_OF_SERVICE', policyVersion: '2026-07-01' },
+          { type: 'PRIVACY_POLICY', policyVersion: '2026-07-01' },
+          {
+            type: 'IDENTITY_DATA_PROCESSING',
+            policyVersion: '2026-07-01',
+          },
+          { type: 'BIOMETRIC_PROCESSING', policyVersion: '2026-07-01' },
+        ],
+      })
+      .expect(201);
+
+    expect(response.body).toMatchObject({
+      userReference: 'user-1',
+      emailVerificationRequired: true,
+      nextAction: 'VERIFY_EMAIL',
+    });
+    expect(JSON.stringify(response.body)).not.toContain('Maple river');
+  });
+
+  it('verifies email through a body token and accepts generic resends', async () => {
+    await request(app.getHttpServer())
+      .post('/api/v1/registration/email/verify')
+      .send({ token: 'A'.repeat(43) })
+      .expect(200)
+      .expect({
+        status: 'verified',
+        nextAction: 'IDENTITY_VERIFICATION',
+      });
+
+    await request(app.getHttpServer())
+      .post('/api/v1/registration/email/resend')
+      .send({ email: 'unknown@example.com' })
+      .expect(202)
+      .expect({ status: 'accepted' });
+  });
+
   afterEach(async () => {
     await app.close();
     initiate.mockReset();
+    register.mockReset();
+    verify.mockReset();
+    resend.mockReset();
   });
 });
