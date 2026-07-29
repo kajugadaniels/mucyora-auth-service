@@ -97,3 +97,14 @@ AES-256-GCM `citizen-snapshot` purpose.
 The provider's raw response and NID are discarded after normalization. Cache
 corruption and cache unavailability are treated as misses; neither condition
 permits plaintext fallback storage.
+
+## Phase 4 Registration Handoff
+
+The public lookup hashes the normalized NID with the same versioned,
+purpose-separated identity lookup key. The plaintext NID is used only for the
+provider request and is not stored or returned.
+
+The durable challenge contains an encrypted minimized citizen snapshot and a
+keyed snapshot digest. Its returned token encrypts the challenge identifier
+under the separate `registration-challenge-token` purpose. The token does not
+reveal the database UUID.
