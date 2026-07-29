@@ -58,6 +58,10 @@ MUCYORA_USER_APP_URL=http://localhost:4000
 MAIL_PROVIDER_TIMEOUT_MS=5000
 OUTBOX_POLL_INTERVAL_MS=5000
 OUTBOX_BATCH_SIZE=20
+OUTBOX_MAX_ATTEMPTS=10
+OUTBOX_LEASE_SECONDS=120
+OUTBOX_RETRY_BASE_SECONDS=30
+OUTBOX_RETRY_MAX_SECONDS=3600
 MUCYORA_AUTH_ISSUER=http://localhost:3000
 MUCYORA_AUTH_ACCESS_AUDIENCES=mucyora-user,mucyora-signature
 MUCYORA_AUTH_SIGNING_KEY_ID=
@@ -105,6 +109,18 @@ STEP_UP_ASSERTION_TTL_SECONDS=300
 MUCYORA_USER_SERVICE_KEY=
 MUCYORA_SIGNATURE_SERVICE_KEY=
 MUCYORA_AUTH_RECOVERY_SERVICE_KEY=
+MUCYORA_OPERATIONS_SERVICE_KEY=
+OPERATIONAL_JOBS_ENABLED=false
+OPERATIONAL_JOBS_INTERVAL_MS=300000
+OPERATIONAL_JOB_BATCH_SIZE=50
+OPERATIONAL_JOB_LOCK_TTL_SECONDS=240
+TOKEN_RETENTION_DAYS=7
+SESSION_RETENTION_DAYS=30
+SECURITY_EVENT_RETENTION_DAYS=365
+STALE_VERIFICATION_ATTEMPT_HOURS=24
+MEDIA_DELETE_RETRY_BASE_SECONDS=60
+MEDIA_DELETE_RETRY_MAX_SECONDS=3600
+VERIFICATION_ORPHAN_GRACE_SECONDS=900
 ```
 
 Future variables must be added to `.env.example` in the same change that adds
@@ -145,6 +161,10 @@ their runtime validation.
   1–10 minutes respectively.
 - User, Signature, Auth Recovery, and Engine service keys must be distinct from
   every cryptographic key and from each other.
+- Operational job batches, leases, retries, retention windows, and orphan grace
+  periods are bounded at startup.
+- Enable operational and verification cleanup workers only on deployments with
+  the approved Auth runtime role and Redis access.
 
 The port is deliberately absent because the service always uses port `3000`.
 
