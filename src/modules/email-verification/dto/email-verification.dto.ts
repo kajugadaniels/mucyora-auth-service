@@ -6,9 +6,10 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { RWANDA_OPENAPI_EXAMPLES } from '../../../common/openapi/auth-openapi';
 
 export class VerifyEmailDto {
-  @ApiProperty()
+  @ApiProperty({ example: RWANDA_OPENAPI_EXAMPLES.opaqueToken })
   @IsString()
   @MinLength(43)
   @MaxLength(512)
@@ -17,7 +18,10 @@ export class VerifyEmailDto {
 }
 
 export class ResendEmailVerificationDto {
-  @ApiProperty({ maxLength: 320 })
+  @ApiProperty({
+    maxLength: 320,
+    example: RWANDA_OPENAPI_EXAMPLES.email,
+  })
   @IsString()
   @IsEmail()
   @MaxLength(320)
