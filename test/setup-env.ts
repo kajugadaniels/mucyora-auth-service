@@ -78,5 +78,7 @@ process.env.MUCYORA_SIGNATURE_SERVICE_KEY =
   'test-signature-service-key-at-least-thirty-two';
 process.env.MUCYORA_AUTH_RECOVERY_SERVICE_KEY =
   'test-auth-recovery-key-at-least-thirty-two';
+process.env.MUCYORA_OPERATIONS_SERVICE_KEY =
+  'test-operations-key-at-least-thirty-two';
 process.env.MUCYORA_ENGINE_TIMEOUT_MS = '45000';
 process.env.MUCYORA_ENGINE_MAX_CONCURRENCY = '4';
