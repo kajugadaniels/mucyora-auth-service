@@ -32,6 +32,44 @@ const environmentSchema = Joi.object({
   IDENTITY_LOOKUP_HMAC_KEY: Joi.string().min(43).required(),
   TOKEN_DIGEST_HMAC_KEY: Joi.string().min(43).required(),
   REQUEST_CONTEXT_HMAC_KEY: Joi.string().min(43).required(),
+  REDIS_URL: Joi.string()
+    .uri({ scheme: ['redis', 'rediss'] })
+    .required(),
+  CACHE_PREFIX: Joi.string()
+    .pattern(/^[a-z0-9:_-]{1,64}$/)
+    .default('mucyora:auth:'),
+  CITIZEN_API_URL: Joi.string().uri().required(),
+  CITIZEN_API_USERNAME: Joi.string().min(1).max(256).required(),
+  CITIZEN_API_PASSWORD: Joi.string().min(8).max(512).required(),
+  CITIZEN_API_FOSA_ID: Joi.string()
+    .pattern(/^\d{4}$/)
+    .default('0022'),
+  CITIZEN_API_CONNECT_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(250)
+    .max(30_000)
+    .default(3_000),
+  CITIZEN_API_RESPONSE_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(500)
+    .max(60_000)
+    .default(10_000),
+  CITIZEN_API_MAX_RETRIES: Joi.number().integer().min(0).max(3).default(2),
+  CITIZEN_CACHE_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(30)
+    .max(3_600)
+    .default(300),
+  CITIZEN_CIRCUIT_FAILURE_THRESHOLD: Joi.number()
+    .integer()
+    .min(2)
+    .max(20)
+    .default(5),
+  CITIZEN_CIRCUIT_RESET_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(1_000)
+    .max(300_000)
+    .default(30_000),
 }).unknown(true);
 
 export interface AuthEnvironment {
@@ -50,6 +88,18 @@ export interface AuthEnvironment {
   IDENTITY_LOOKUP_HMAC_KEY: string;
   TOKEN_DIGEST_HMAC_KEY: string;
   REQUEST_CONTEXT_HMAC_KEY: string;
+  REDIS_URL: string;
+  CACHE_PREFIX: string;
+  CITIZEN_API_URL: string;
+  CITIZEN_API_USERNAME: string;
+  CITIZEN_API_PASSWORD: string;
+  CITIZEN_API_FOSA_ID: string;
+  CITIZEN_API_CONNECT_TIMEOUT_MS: number;
+  CITIZEN_API_RESPONSE_TIMEOUT_MS: number;
+  CITIZEN_API_MAX_RETRIES: number;
+  CITIZEN_CACHE_TTL_SECONDS: number;
+  CITIZEN_CIRCUIT_FAILURE_THRESHOLD: number;
+  CITIZEN_CIRCUIT_RESET_TIMEOUT_MS: number;
 }
 
 export function validateEnvironment(
@@ -94,8 +144,56 @@ export function validateEnvironment(
   }
 
   assertEncodedKeys(environment);
+  assertCitizenProviderUrl(environment);
+  assertRedisUrl(environment);
 
   return environment;
+}
+
+function assertCitizenProviderUrl(environment: AuthEnvironment): void {
+  const url = new URL(environment.CITIZEN_API_URL);
+
+  if (
+    url.username ||
+    url.password ||
+    url.hash ||
+    url.search ||
+    !['https:', 'http:'].includes(url.protocol)
+  ) {
+    throw new Error(
+      'Auth environment validation failed: CITIZEN_API_URL must be a fixed HTTP(S) URL without credentials, query, or fragment',
+    );
+  }
+
+  if (environment.APP_ENV === 'production' && url.protocol !== 'https:') {
+    throw new Error(
+      'Auth environment validation failed: production CITIZEN_API_URL must use HTTPS',
+    );
+  }
+
+  if (
+    url.protocol === 'http:' &&
+    !['localhost', '127.0.0.1', '::1'].includes(url.hostname)
+  ) {
+    throw new Error(
+      'Auth environment validation failed: insecure CITIZEN_API_URL is allowed only for a local test provider',
+    );
+  }
+}
+
+function assertRedisUrl(environment: AuthEnvironment): void {
+  const url = new URL(environment.REDIS_URL);
+  if (url.hash || url.search) {
+    throw new Error(
+      'Auth environment validation failed: REDIS_URL must not contain query or fragment data',
+    );
+  }
+
+  if (environment.APP_ENV === 'production' && url.protocol !== 'rediss:') {
+    throw new Error(
+      'Auth environment validation failed: production REDIS_URL must use TLS',
+    );
+  }
 }
 
 export function parseAllowedOrigins(value: string): string[] {
