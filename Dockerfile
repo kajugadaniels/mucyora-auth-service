@@ -24,7 +24,8 @@ RUN groupadd --system --gid 10001 mucyora \
 
 COPY --from=build --chown=mucyora:mucyora /workspace/db ./db
 COPY --from=build --chown=mucyora:mucyora /workspace/auth/package.json /workspace/auth/package-lock.json ./auth/
-COPY --from=build --chown=mucyora:mucyora /workspace/auth/node_modules ./auth/node_modules
+RUN --mount=type=cache,target=/root/.npm \
+    cd auth && npm ci --omit=dev
 COPY --from=build --chown=mucyora:mucyora /workspace/auth/dist ./auth/dist
 
 USER mucyora
@@ -35,4 +36,3 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/health/live').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1))"
 
 CMD ["node", "dist/main.js"]
-
