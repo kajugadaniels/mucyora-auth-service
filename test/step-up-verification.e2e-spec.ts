@@ -18,6 +18,7 @@ import { DatabaseService } from '../src/common/database/database.service';
 import { AccessAuthGuard } from '../src/modules/auth/access-auth.guard';
 import { InternalServiceGuard } from '../src/modules/step-up-verification/internal-service.guard';
 import { StepUpVerificationService } from '../src/modules/step-up-verification/step-up-verification.service';
+import { OperationalJobsService } from '../src/modules/operations/operational-jobs.service';
 
 describe('user and signature step-up contracts (e2e)', () => {
   let app: INestApplication<App>;
@@ -50,6 +51,17 @@ describe('user and signature step-up contracts (e2e)', () => {
         challenge: jest.fn(),
         issueAssertion: jest.fn(),
         consumeAssertion,
+      })
+      .overrideProvider(OperationalJobsService)
+      .useValue({
+        status: jest.fn().mockReturnValue({
+          running: false,
+          lastStartedAt: null,
+          lastCompletedAt: null,
+          lastFailedAt: null,
+          lastErrorCode: null,
+          totals: { outboxDeadLetters: 0 },
+        }),
       })
       .overrideGuard(AccessAuthGuard)
       .useValue({
@@ -137,6 +149,22 @@ describe('user and signature step-up contracts (e2e)', () => {
       'mucyora-signature',
       expect.objectContaining({ targetResourceId: 'agreement-123' }),
     );
+  });
+
+  it('exposes only minimized job status to the operations service', async () => {
+    await request(app.getHttpServer())
+      .get('/api/v1/internal/operations/jobs')
+      .set('x-mucyora-service-name', 'mucyora-operations')
+      .set('x-mucyora-service-key', 'synthetic-operations-service-key')
+      .expect(200)
+      .expect({
+        running: false,
+        lastStartedAt: null,
+        lastCompletedAt: null,
+        lastFailedAt: null,
+        lastErrorCode: null,
+        totals: { outboxDeadLetters: 0 },
+      });
   });
 
   afterEach(async () => {
