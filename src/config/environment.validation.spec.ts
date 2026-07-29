@@ -8,6 +8,12 @@ describe('environment validation', () => {
     APP_ENV: 'test',
     DATABASE_URL:
       'postgresql://mucyora_auth_app:placeholder@localhost:5432/mucyora',
+    IDENTITY_ENCRYPTION_KEY_VERSION: 'v1',
+    IDENTITY_ENCRYPTION_SECRET: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    IDENTITY_LOOKUP_KEY_VERSION: 'v1',
+    IDENTITY_LOOKUP_HMAC_KEY: 'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE',
+    TOKEN_DIGEST_HMAC_KEY: 'AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI',
+    REQUEST_CONTEXT_HMAC_KEY: 'AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM',
   };
 
   it('applies safe defaults', () => {
@@ -43,5 +49,14 @@ describe('environment validation', () => {
         DOCS_BASIC_AUTH_PASS: 'short',
       }),
     ).toThrow('password of at least 16 characters');
+  });
+
+  it('rejects reuse across purpose-separated keys', () => {
+    expect(() =>
+      validateEnvironment({
+        ...baseEnvironment,
+        TOKEN_DIGEST_HMAC_KEY: baseEnvironment.IDENTITY_LOOKUP_HMAC_KEY,
+      }),
+    ).toThrow('must differ');
   });
 });
