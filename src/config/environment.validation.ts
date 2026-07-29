@@ -149,6 +149,14 @@ const environmentSchema = Joi.object({
     .max(60_000)
     .default(5_000),
   OUTBOX_BATCH_SIZE: Joi.number().integer().min(1).max(100).default(20),
+  OUTBOX_MAX_ATTEMPTS: Joi.number().integer().min(1).max(25).default(10),
+  OUTBOX_LEASE_SECONDS: Joi.number().integer().min(30).max(900).default(120),
+  OUTBOX_RETRY_BASE_SECONDS: Joi.number().integer().min(5).max(300).default(30),
+  OUTBOX_RETRY_MAX_SECONDS: Joi.number()
+    .integer()
+    .min(60)
+    .max(86_400)
+    .default(3_600),
   MUCYORA_AUTH_ISSUER: Joi.string().uri().required(),
   MUCYORA_AUTH_ACCESS_AUDIENCES: Joi.string().min(1).required(),
   MUCYORA_AUTH_SIGNING_KEY_ID: Joi.string()
@@ -278,6 +286,53 @@ const environmentSchema = Joi.object({
   MUCYORA_USER_SERVICE_KEY: Joi.string().min(32).max(512).required(),
   MUCYORA_SIGNATURE_SERVICE_KEY: Joi.string().min(32).max(512).required(),
   MUCYORA_AUTH_RECOVERY_SERVICE_KEY: Joi.string().min(32).max(512).required(),
+  MUCYORA_OPERATIONS_SERVICE_KEY: Joi.string().min(32).max(512).required(),
+  OPERATIONAL_JOBS_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+  OPERATIONAL_JOBS_INTERVAL_MS: Joi.number()
+    .integer()
+    .min(10_000)
+    .max(3_600_000)
+    .default(300_000),
+  OPERATIONAL_JOB_BATCH_SIZE: Joi.number()
+    .integer()
+    .min(1)
+    .max(500)
+    .default(50),
+  OPERATIONAL_JOB_LOCK_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(30)
+    .max(900)
+    .default(240),
+  TOKEN_RETENTION_DAYS: Joi.number().integer().min(0).max(90).default(7),
+  SESSION_RETENTION_DAYS: Joi.number().integer().min(1).max(365).default(30),
+  SECURITY_EVENT_RETENTION_DAYS: Joi.number()
+    .integer()
+    .min(30)
+    .max(3_650)
+    .default(365),
+  STALE_VERIFICATION_ATTEMPT_HOURS: Joi.number()
+    .integer()
+    .min(1)
+    .max(168)
+    .default(24),
+  MEDIA_DELETE_RETRY_BASE_SECONDS: Joi.number()
+    .integer()
+    .min(5)
+    .max(300)
+    .default(60),
+  MEDIA_DELETE_RETRY_MAX_SECONDS: Joi.number()
+    .integer()
+    .min(60)
+    .max(86_400)
+    .default(3_600),
+  VERIFICATION_ORPHAN_GRACE_SECONDS: Joi.number()
+    .integer()
+    .min(300)
+    .max(86_400)
+    .default(900),
 }).unknown(true);
 
 export interface AuthEnvironment {
@@ -331,6 +386,10 @@ export interface AuthEnvironment {
   MAIL_PROVIDER_TIMEOUT_MS: number;
   OUTBOX_POLL_INTERVAL_MS: number;
   OUTBOX_BATCH_SIZE: number;
+  OUTBOX_MAX_ATTEMPTS: number;
+  OUTBOX_LEASE_SECONDS: number;
+  OUTBOX_RETRY_BASE_SECONDS: number;
+  OUTBOX_RETRY_MAX_SECONDS: number;
   MUCYORA_AUTH_ISSUER: string;
   MUCYORA_AUTH_ACCESS_AUDIENCES: string;
   MUCYORA_AUTH_SIGNING_KEY_ID: string;
@@ -378,6 +437,18 @@ export interface AuthEnvironment {
   MUCYORA_USER_SERVICE_KEY: string;
   MUCYORA_SIGNATURE_SERVICE_KEY: string;
   MUCYORA_AUTH_RECOVERY_SERVICE_KEY: string;
+  MUCYORA_OPERATIONS_SERVICE_KEY: string;
+  OPERATIONAL_JOBS_ENABLED: boolean;
+  OPERATIONAL_JOBS_INTERVAL_MS: number;
+  OPERATIONAL_JOB_BATCH_SIZE: number;
+  OPERATIONAL_JOB_LOCK_TTL_SECONDS: number;
+  TOKEN_RETENTION_DAYS: number;
+  SESSION_RETENTION_DAYS: number;
+  SECURITY_EVENT_RETENTION_DAYS: number;
+  STALE_VERIFICATION_ATTEMPT_HOURS: number;
+  MEDIA_DELETE_RETRY_BASE_SECONDS: number;
+  MEDIA_DELETE_RETRY_MAX_SECONDS: number;
+  VERIFICATION_ORPHAN_GRACE_SECONDS: number;
 }
 
 export function validateEnvironment(
@@ -475,6 +546,7 @@ function assertVerificationConfiguration(environment: AuthEnvironment): void {
     environment.MUCYORA_USER_SERVICE_KEY,
     environment.MUCYORA_SIGNATURE_SERVICE_KEY,
     environment.MUCYORA_AUTH_RECOVERY_SERVICE_KEY,
+    environment.MUCYORA_OPERATIONS_SERVICE_KEY,
   ];
   if (
     internalServiceKeys.some((key) => separatedKeys.includes(key)) ||
