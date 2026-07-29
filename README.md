@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 7 of the implementation plan is complete. In addition to the secure
+Phase 8 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -63,9 +63,14 @@ service foundation, Auth now provides:
 - current-password-protected password change;
 - password-change session and refresh-token revocation;
 - asynchronous reset and password-change security notifications.
+- consent- and attempt-gated NIDA-linked identity verification;
+- private, direct, attempt-bound verification-media upload policies;
+- provider-backed AWS Face Liveness sessions;
+- signed and replay-resistant MUCYORA Engine requests;
+- normalized pass, fail, retry, review, and provider-unavailable states;
+- bounded attempt windows, retry deadlines, and media reconciliation.
 
-Biometric identity verification and session-upgrade business functionality are
-not implemented yet.
+Limited-to-full session-upgrade business functionality is not implemented yet.
 
 ## Service Boundary
 
@@ -98,24 +103,31 @@ environment variables.
 
 ## Implemented Endpoints
 
-| Method   | Path                                  | Purpose                                              |
-| -------- | ------------------------------------- | ---------------------------------------------------- |
-| `GET`    | `/health/live`                        | Process liveness without database or external calls  |
-| `GET`    | `/health/ready`                       | Cached database readiness                            |
-| `POST`   | `/api/v1/registration/citizen/lookup` | Create an opaque, short-lived registration challenge |
-| `POST`   | `/api/v1/registration`                | Atomically create a pending account                  |
-| `POST`   | `/api/v1/registration/email/verify`   | Consume an email-verification token                  |
-| `POST`   | `/api/v1/registration/email/resend`   | Request a generic verification resend                |
-| `POST`   | `/api/v1/auth/login`                  | Create a limited or full session                     |
-| `POST`   | `/api/v1/auth/refresh`                | Atomically rotate refresh credentials                |
-| `POST`   | `/api/v1/auth/logout`                 | Revoke the current session                           |
-| `POST`   | `/api/v1/auth/logout-all`             | Revoke all owned sessions                            |
-| `GET`    | `/api/v1/auth/sessions`               | List active owned sessions                           |
-| `DELETE` | `/api/v1/auth/sessions/:sessionId`    | Revoke one owned session                             |
-| `POST`   | `/api/v1/auth/password/forgot`        | Request generic password recovery                    |
-| `POST`   | `/api/v1/auth/password/reset`         | Consume a single-use password reset                  |
-| `POST`   | `/api/v1/auth/password/change`        | Change a password using current credentials          |
-| `GET`    | `/.well-known/jwks.json`              | Return public access-token verification keys         |
+| Method   | Path                                                                 | Purpose                                              |
+| -------- | -------------------------------------------------------------------- | ---------------------------------------------------- |
+| `GET`    | `/health/live`                                                       | Process liveness without database or external calls  |
+| `GET`    | `/health/ready`                                                      | Cached database readiness                            |
+| `POST`   | `/api/v1/registration/citizen/lookup`                                | Create an opaque, short-lived registration challenge |
+| `POST`   | `/api/v1/registration`                                               | Atomically create a pending account                  |
+| `POST`   | `/api/v1/registration/email/verify`                                  | Consume an email-verification token                  |
+| `POST`   | `/api/v1/registration/email/resend`                                  | Request a generic verification resend                |
+| `POST`   | `/api/v1/auth/login`                                                 | Create a limited or full session                     |
+| `POST`   | `/api/v1/auth/refresh`                                               | Atomically rotate refresh credentials                |
+| `POST`   | `/api/v1/auth/logout`                                                | Revoke the current session                           |
+| `POST`   | `/api/v1/auth/logout-all`                                            | Revoke all owned sessions                            |
+| `GET`    | `/api/v1/auth/sessions`                                              | List active owned sessions                           |
+| `DELETE` | `/api/v1/auth/sessions/:sessionId`                                   | Revoke one owned session                             |
+| `POST`   | `/api/v1/auth/password/forgot`                                       | Request generic password recovery                    |
+| `POST`   | `/api/v1/auth/password/reset`                                        | Consume a single-use password reset                  |
+| `POST`   | `/api/v1/auth/password/change`                                       | Change a password using current credentials          |
+| `POST`   | `/api/v1/identity-verification/attempts`                             | Create an enrollment attempt                         |
+| `POST`   | `/api/v1/identity-verification/attempts/:attemptId/upload-policy`    | Create private upload policy                         |
+| `POST`   | `/api/v1/identity-verification/attempts/:attemptId/media/confirm`    | Confirm private media                                |
+| `POST`   | `/api/v1/identity-verification/attempts/:attemptId/liveness-session` | Create real liveness session                         |
+| `POST`   | `/api/v1/identity-verification/attempts/:attemptId/submit`           | Submit verification                                  |
+| `GET`    | `/api/v1/identity-verification/status`                               | Read identity status                                 |
+| `GET`    | `/api/v1/identity-verification/attempts/:attemptId`                  | Read owned attempt                                   |
+| `GET`    | `/.well-known/jwks.json`                                             | Return public access-token verification keys         |
 
 Later application APIs will be mounted below `/api/v1` in their separately
 authorized phases.
@@ -171,8 +183,7 @@ The shared Prisma client must already be generated and built in `api/db`.
 - Never expose or persist a raw provider response; cache only the minimized,
   encrypted positive result.
 
-Biometric identity verification and limited-to-full session upgrade remain
-requirements for later phases.
+Limited-to-full session upgrade remains a requirement for Phase 9.
 
 ## Container Build
 
@@ -195,5 +206,5 @@ documentation rules.
 ## Production Readiness
 
 The service is not yet a production-ready authentication product. Later phases
-must still implement biometric identity verification, limited-to-full upgrade,
-operational cleanup, load testing, and release security gates.
+must still implement limited-to-full upgrade, operational cleanup, load
+testing, and release security gates.
