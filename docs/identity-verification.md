@@ -1,10 +1,14 @@
 # Account Identity Verification
 
-## Phase 8 Scope
+## Account-Enrollment Scope
 
 Phase 8 implements NIDA-linked account-enrollment verification. It does not
 upgrade the caller’s existing limited session; session-family replacement is
 reserved for Phase 9.
+
+Phase 10 reuses the same private upload, liveness, and Engine submission
+pipeline for target-bound step-up attempts. A step-up result does not modify
+the user’s permanent enrollment status.
 
 ## Preconditions
 
