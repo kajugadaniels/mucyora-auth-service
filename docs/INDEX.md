@@ -28,6 +28,7 @@ This directory is the operational and engineering reference for `api/auth`.
 22. [Controlled deployment and rollback](deployment-and-rollback.md)
 23. [Compatibility removal plan](compatibility-removal-plan.md)
 24. [Release readiness](release-readiness.md)
+25. [OpenAPI and API versioning](openapi-and-versioning.md)
 
 ## Implementation Planning
 
