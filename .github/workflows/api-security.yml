@@ -54,6 +54,10 @@ jobs:
         working-directory: auth
         run: npm run check:api-contract
 
+      - name: Verify generated OpenAPI artifact
+        working-directory: auth
+        run: npm run openapi:check
+
       - name: Run lint
         working-directory: auth
         run: npm run lint:check
