@@ -19,6 +19,7 @@ This directory is the operational and engineering reference for `api/auth`.
 13. [Authentication and sessions](authentication-and-sessions.md)
 14. [Password lifecycle](password-lifecycle.md)
 15. [Account identity verification](identity-verification.md)
+16. [Step-up identity verification](step-up-verification.md)
 
 ## Implementation Planning
 
