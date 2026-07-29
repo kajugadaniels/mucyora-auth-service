@@ -19,20 +19,20 @@ non-production Neon branch.
 
 ## Current-to-Target Gap
 
-| Current model | Current limitation | Proposed target |
-|---|---|---|
-| `User` | Email is not separately normalized; password is stored on User; boolean account states; no optimistic version | Keep account identity/state only; add normalized email, timestamps/status enums, version |
-| `CitizenIdentity` | Supports legacy FIN; ordinary hash; CBC-era column names; no key/source versions or masked value | Evolve or migrate to a NIDA-only `UserIdentity`-equivalent record with encrypted identifier and versioned HMAC digest |
-| `PlatformId` | Business requirement is not documented | Preserve only if an active consumer requires it; otherwise deprecate through a separately reviewed migration |
-| `EmailVerificationToken` | One row per user, boolean use state, token hash not unique | Digest uniqueness, `usedAt`, `supersededAt`, indexed expiry |
-| `PasswordResetToken` | Boolean use state and no revoke/request context | `PasswordResetRequest` equivalent with `usedAt`, `revokedAt`, hashed request context |
-| `RefreshToken` | Directly attached to User; no session family, generation, replacement, use, or reuse evidence | Add `AuthSession`; attach generation-based refresh records to a session |
-| `IdVerification` | Terminal boolean result; no purpose/status/policy/media/liveness/session lifecycle | `IdentityVerificationAttempt` plus `VerificationMedia` |
-| `SecurityEventLog` | Minimal event and raw IP fields; no outcome/severity/correlation/session/reason | Evolve to structured `SecurityEvent` equivalent with hashed context and safe metadata |
-| None | Provider lookup cannot issue a durable single-use handoff | Add `RegistrationChallenge` |
-| None | Consent version/evidence cannot be proven | Add `UserConsent` |
-| None | Retried public writes lack durable request binding | Add `IdempotencyRecord` |
-| None | Email/notification work cannot commit atomically with state | Add `OutboxEvent` |
+| Current model            | Current limitation                                                                                            | Proposed target                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `User`                   | Email is not separately normalized; password is stored on User; boolean account states; no optimistic version | Keep account identity/state only; add normalized email, timestamps/status enums, version                              |
+| `CitizenIdentity`        | Supports legacy FIN; ordinary hash; CBC-era column names; no key/source versions or masked value              | Evolve or migrate to a NIDA-only `UserIdentity`-equivalent record with encrypted identifier and versioned HMAC digest |
+| `PlatformId`             | Business requirement is not documented                                                                        | Preserve only if an active consumer requires it; otherwise deprecate through a separately reviewed migration          |
+| `EmailVerificationToken` | One row per user, boolean use state, token hash not unique                                                    | Digest uniqueness, `usedAt`, `supersededAt`, indexed expiry                                                           |
+| `PasswordResetToken`     | Boolean use state and no revoke/request context                                                               | `PasswordResetRequest` equivalent with `usedAt`, `revokedAt`, hashed request context                                  |
+| `RefreshToken`           | Directly attached to User; no session family, generation, replacement, use, or reuse evidence                 | Add `AuthSession`; attach generation-based refresh records to a session                                               |
+| `IdVerification`         | Terminal boolean result; no purpose/status/policy/media/liveness/session lifecycle                            | `IdentityVerificationAttempt` plus `VerificationMedia`                                                                |
+| `SecurityEventLog`       | Minimal event and raw IP fields; no outcome/severity/correlation/session/reason                               | Evolve to structured `SecurityEvent` equivalent with hashed context and safe metadata                                 |
+| None                     | Provider lookup cannot issue a durable single-use handoff                                                     | Add `RegistrationChallenge`                                                                                           |
+| None                     | Consent version/evidence cannot be proven                                                                     | Add `UserConsent`                                                                                                     |
+| None                     | Retried public writes lack durable request binding                                                            | Add `IdempotencyRecord`                                                                                               |
+| None                     | Email/notification work cannot commit atomically with state                                                   | Add `OutboxEvent`                                                                                                     |
 
 ## Proposed Durable Contract
 
