@@ -8,6 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { RWANDA_OPENAPI_EXAMPLES } from '../../../common/openapi/auth-openapi';
 
 const STEP_UP_PURPOSES = [
   VerificationPurpose.DEVICE_TRANSFER,
@@ -16,12 +17,16 @@ const STEP_UP_PURPOSES = [
 ] as const;
 
 export class CreateStepUpChallengeDto {
-  @ApiProperty({ enum: STEP_UP_PURPOSES })
+  @ApiProperty({
+    enum: STEP_UP_PURPOSES,
+    example: VerificationPurpose.DEVICE_TRANSFER,
+  })
   @IsEnum(VerificationPurpose)
   purpose!: VerificationPurpose;
 
   @ApiProperty({
     description: 'Opaque identifier of the protected target resource',
+    example: RWANDA_OPENAPI_EXAMPLES.targetResourceId,
   })
   @IsString()
   @MinLength(1)
@@ -31,11 +36,11 @@ export class CreateStepUpChallengeDto {
 }
 
 export class ConsumeStepUpAssertionDto extends CreateStepUpChallengeDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({ format: 'uuid', example: RWANDA_OPENAPI_EXAMPLES.userId })
   @IsUUID()
   userId!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: RWANDA_OPENAPI_EXAMPLES.opaqueToken })
   @IsString()
   @MinLength(43)
   @MaxLength(128)
