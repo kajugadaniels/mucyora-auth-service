@@ -2,9 +2,9 @@
 
 ## Phase 5 Scope
 
-Phase 5 completes account creation and email verification. It does not issue
-access or refresh tokens, create sessions, implement login, or mark biometric
-identity verification complete.
+Phase 5 completes account creation and email verification. Phase 6 now issues
+access/refresh tokens and creates sessions after login. Biometric identity
+verification remains separate.
 
 ## Registration
 
