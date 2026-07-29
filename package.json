@@ -8,6 +8,10 @@
   "scripts": {
     "build": "nest build",
     "benchmark:security": "ts-node scripts/benchmark-security-primitives.ts",
+    "benchmark:auth": "ts-node scripts/benchmark-auth-paths.ts",
+    "benchmark:query-plans": "ts-node scripts/inspect-query-plans.ts",
+    "load:validate": "node --check performance/k6/auth-load.js && node --check performance/k6/auth-soak.js",
+    "soak:local": "ts-node scripts/soak-auth-runtime.ts",
     "check:boundary": "node scripts/assert-project-boundary.mjs",
     "check": "npm run check:boundary && npm run lint:check && npm run build && npm test -- --runInBand && npm run test:e2e -- --runInBand",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
