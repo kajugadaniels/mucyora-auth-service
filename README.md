@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 12 of the implementation plan is complete. In addition to the secure
+Phase 13 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -231,5 +231,11 @@ documentation rules.
 
 ## Production Readiness
 
-The service is not yet a production-ready authentication product. Approved
-staging load evidence and Phase 13 release security gates remain required.
+Production approval still requires the external evidence listed in
+`docs/release-readiness.md`, including staging load/soak, cloud controls,
+rotation and restore drills, alert delivery, and independent security review.
+
+Phase 13 adds automated contract, boundary, supply-chain, secret, and container
+gates; CycloneDX SBOM generation; overlap-safe JWT key rotation; hardened
+deployment configuration; and controlled recovery, incident, compatibility,
+and rollout procedures. It does not deploy the service.
