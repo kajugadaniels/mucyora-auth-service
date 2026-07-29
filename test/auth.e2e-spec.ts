@@ -11,11 +11,14 @@ import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { DatabaseService } from '../src/common/database/database.service';
 import { AuthenticationService } from '../src/modules/auth/authentication.service';
+import { PasswordService } from '../src/modules/password/password.service';
 
 describe('authentication contracts (e2e)', () => {
   let app: INestApplication<App>;
   const login = jest.fn();
   const refresh = jest.fn();
+  const forgotPassword = jest.fn();
+  const resetPassword = jest.fn();
 
   beforeEach(async () => {
     login.mockImplementation((input: { transport: string }) =>
@@ -46,6 +49,8 @@ describe('authentication contracts (e2e)', () => {
       csrfToken: 'rotated-csrf-token',
       transport: 'NATIVE',
     });
+    forgotPassword.mockResolvedValue({ status: 'accepted' });
+    resetPassword.mockResolvedValue({ status: 'changed' });
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -53,6 +58,12 @@ describe('authentication contracts (e2e)', () => {
       .useValue({ isReady: jest.fn().mockResolvedValue(true) })
       .overrideProvider(AuthenticationService)
       .useValue({ login, refresh })
+      .overrideProvider(PasswordService)
+      .useValue({
+        forgot: forgotPassword,
+        reset: resetPassword,
+        change: jest.fn(),
+      })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -139,9 +150,32 @@ describe('authentication contracts (e2e)', () => {
     expect(body.keys[0]).not.toHaveProperty('d');
   });
 
+  it('returns a generic password recovery response', async () => {
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/password/forgot')
+      .send({ email: 'user@example.com' })
+      .expect(200)
+      .expect({ status: 'accepted' });
+    expect(forgotPassword).toHaveBeenCalled();
+  });
+
+  it('accepts the password reset contract without exposing token state', async () => {
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/password/reset')
+      .send({
+        token: 'A'.repeat(43),
+        newPassword: 'A different secure voyage phrase 47!',
+      })
+      .expect(200)
+      .expect({ status: 'changed' });
+    expect(resetPassword).toHaveBeenCalled();
+  });
+
   afterEach(async () => {
     await app.close();
     login.mockReset();
     refresh.mockReset();
+    forgotPassword.mockReset();
+    resetPassword.mockReset();
   });
 });
