@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 10 of the implementation plan is complete. In addition to the secure
+Phase 11 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -77,6 +77,11 @@ service foundation, Auth now provides:
 - HMAC target-bound, purpose-specific step-up challenges;
 - short-lived, encrypted, one-time internal assertions;
 - dedicated service authentication for User, Signature, and Auth Recovery.
+- leader-elected, leased outbox delivery with exponential retry and dead letters;
+- provider idempotency keys that prevent duplicate mail when supported;
+- bounded token, session, attempt, assertion, and security-event cleanup;
+- legal-hold-aware media deletion and paginated orphan reconciliation;
+- minimized internal operational job status and structured alerts.
 
 ## Service Boundary
 
@@ -138,6 +143,7 @@ environment variables.
 | `GET`    | `/api/v1/step-up/challenges/:challengeId`                            | Read an owned step-up challenge                      |
 | `POST`   | `/api/v1/step-up/challenges/:challengeId/assertion`                  | Issue an assertion after the linked attempt passes   |
 | `POST`   | `/api/v1/internal/step-up/assertions/consume`                        | Atomically consume an authorized internal assertion  |
+| `GET`    | `/api/v1/internal/operations/jobs`                                   | Read minimized operational worker status             |
 | `GET`    | `/.well-known/jwks.json`                                             | Return public access-token verification keys         |
 
 Later application APIs will be mounted below `/api/v1` in their separately
@@ -221,6 +227,5 @@ documentation rules.
 
 ## Production Readiness
 
-The service is not yet a production-ready authentication product. Later phases
-must still implement operational jobs, load testing, and release security
-gates.
+The service is not yet a production-ready authentication product. Phase 12
+load validation and Phase 13 release security gates remain required.
