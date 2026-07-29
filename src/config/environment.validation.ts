@@ -189,6 +189,74 @@ const environmentSchema = Joi.object({
   CSRF_COOKIE_NAME: Joi.string()
     .pattern(/^[A-Za-z0-9_-]{1,64}$/)
     .default('mucyora_csrf'),
+  AWS_REGION: Joi.string().min(3).max(64).default('eu-west-1'),
+  AWS_S3_VERIFICATION_BUCKET: Joi.string().min(3).max(63).required(),
+  AWS_S3_VERIFICATION_PREFIX: Joi.string()
+    .pattern(/^[A-Za-z0-9/_-]{1,128}\/$/)
+    .default('identity-verification/'),
+  AWS_S3_ENDPOINT: Joi.string().uri().allow('').default(''),
+  AWS_S3_FORCE_PATH_STYLE: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+  AWS_ACCESS_KEY_ID: Joi.string().allow('').default(''),
+  AWS_SECRET_ACCESS_KEY: Joi.string().allow('').default(''),
+  AWS_SESSION_TOKEN: Joi.string().allow('').default(''),
+  VERIFICATION_UPLOAD_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(60)
+    .max(900)
+    .default(300),
+  VERIFICATION_MEDIA_MAX_SIZE_BYTES: Joi.number()
+    .integer()
+    .min(65_536)
+    .max(10_485_760)
+    .default(5_242_880),
+  VERIFICATION_MEDIA_MAX_PIXELS: Joi.number()
+    .integer()
+    .min(1_000_000)
+    .max(40_000_000)
+    .default(20_000_000),
+  VERIFICATION_MEDIA_RETENTION_SECONDS: Joi.number()
+    .integer()
+    .min(900)
+    .max(604_800)
+    .default(86_400),
+  VERIFICATION_MAX_ATTEMPTS: Joi.number().integer().min(1).max(10).default(3),
+  VERIFICATION_ATTEMPT_WINDOW_HOURS: Joi.number()
+    .integer()
+    .min(1)
+    .max(168)
+    .default(24),
+  VERIFICATION_RETRY_DELAY_SECONDS: Joi.number()
+    .integer()
+    .min(60)
+    .max(86_400)
+    .default(3_600),
+  VERIFICATION_POLICY_VERSION: Joi.string()
+    .pattern(/^[A-Za-z0-9._:-]{8,64}$/)
+    .required(),
+  VERIFICATION_CLEANUP_INTERVAL_MS: Joi.number()
+    .integer()
+    .min(10_000)
+    .max(3_600_000)
+    .default(300_000),
+  VERIFICATION_CLEANUP_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+  MUCYORA_ENGINE_URL: Joi.string().uri().required(),
+  MUCYORA_ENGINE_SERVICE_KEY: Joi.string().min(32).max(512).required(),
+  MUCYORA_ENGINE_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(1_000)
+    .max(90_000)
+    .default(45_000),
+  MUCYORA_ENGINE_MAX_CONCURRENCY: Joi.number()
+    .integer()
+    .min(1)
+    .max(32)
+    .default(4),
 }).unknown(true);
 
 export interface AuthEnvironment {
@@ -260,6 +328,28 @@ export interface AuthEnvironment {
   COOKIE_SAME_SITE: 'lax' | 'strict' | 'none';
   REFRESH_COOKIE_NAME: string;
   CSRF_COOKIE_NAME: string;
+  AWS_REGION: string;
+  AWS_S3_VERIFICATION_BUCKET: string;
+  AWS_S3_VERIFICATION_PREFIX: string;
+  AWS_S3_ENDPOINT: string;
+  AWS_S3_FORCE_PATH_STYLE: boolean;
+  AWS_ACCESS_KEY_ID: string;
+  AWS_SECRET_ACCESS_KEY: string;
+  AWS_SESSION_TOKEN: string;
+  VERIFICATION_UPLOAD_TTL_SECONDS: number;
+  VERIFICATION_MEDIA_MAX_SIZE_BYTES: number;
+  VERIFICATION_MEDIA_MAX_PIXELS: number;
+  VERIFICATION_MEDIA_RETENTION_SECONDS: number;
+  VERIFICATION_MAX_ATTEMPTS: number;
+  VERIFICATION_ATTEMPT_WINDOW_HOURS: number;
+  VERIFICATION_RETRY_DELAY_SECONDS: number;
+  VERIFICATION_POLICY_VERSION: string;
+  VERIFICATION_CLEANUP_INTERVAL_MS: number;
+  VERIFICATION_CLEANUP_ENABLED: boolean;
+  MUCYORA_ENGINE_URL: string;
+  MUCYORA_ENGINE_SERVICE_KEY: string;
+  MUCYORA_ENGINE_TIMEOUT_MS: number;
+  MUCYORA_ENGINE_MAX_CONCURRENCY: number;
 }
 
 export function validateEnvironment(
@@ -308,8 +398,51 @@ export function validateEnvironment(
   assertRedisUrl(environment);
   assertMailConfiguration(environment);
   assertAuthSigningConfiguration(environment);
+  assertVerificationConfiguration(environment);
 
   return environment;
+}
+
+function assertVerificationConfiguration(environment: AuthEnvironment): void {
+  const engineUrl = new URL(environment.MUCYORA_ENGINE_URL);
+  const storageEndpoint = environment.AWS_S3_ENDPOINT
+    ? new URL(environment.AWS_S3_ENDPOINT)
+    : null;
+  if (
+    engineUrl.username ||
+    engineUrl.password ||
+    engineUrl.search ||
+    engineUrl.hash ||
+    (environment.APP_ENV === 'production' && engineUrl.protocol !== 'https:')
+  ) {
+    throw new Error(
+      'Auth environment validation failed: MUCYORA_ENGINE_URL must be a fixed HTTPS origin in production',
+    );
+  }
+  if (
+    storageEndpoint &&
+    (storageEndpoint.username ||
+      storageEndpoint.password ||
+      storageEndpoint.search ||
+      storageEndpoint.hash ||
+      (environment.APP_ENV === 'production' &&
+        storageEndpoint.protocol !== 'https:'))
+  ) {
+    throw new Error(
+      'Auth environment validation failed: AWS_S3_ENDPOINT must use HTTPS without embedded credentials in production',
+    );
+  }
+  const separatedKeys = [
+    environment.IDENTITY_ENCRYPTION_SECRET,
+    environment.IDENTITY_LOOKUP_HMAC_KEY,
+    environment.TOKEN_DIGEST_HMAC_KEY,
+    environment.REQUEST_CONTEXT_HMAC_KEY,
+  ];
+  if (separatedKeys.includes(environment.MUCYORA_ENGINE_SERVICE_KEY)) {
+    throw new Error(
+      'Auth environment validation failed: MUCYORA_ENGINE_SERVICE_KEY must differ from all other security keys',
+    );
+  }
 }
 
 function assertAuthSigningConfiguration(environment: AuthEnvironment): void {
