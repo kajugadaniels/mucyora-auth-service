@@ -189,6 +189,19 @@ verification media is not automatically deleted. Orphaned object-storage
 reconciliation is paginated, waits through a configurable grace period, and
 deletes only objects whose keyed reference digest has no database record.
 
+Phase 12 performance validation preserves every authentication, authorization,
+rate-limit, timeout, and cryptographic control. Load profiles accept only
+synthetic inputs, reject production-looking targets, and require explicit
+approval for non-local targets. Request telemetry records low-cardinality route
+templates, status, duration, method, and correlation ID without request bodies,
+credentials, tokens, identity values, or dependency connection details.
+
+Database query-plan inspection is read-only and requires both a dedicated
+performance connection string and an explicit opt-in. It must run only against
+an approved disposable branch containing synthetic data. Local microbenchmarks
+and soak checks are capacity evidence, not permission to weaken Argon2, replay
+protection, distributed coordination, or failure-closed behavior.
+
 ## Database Safety
 
 Auth imports database behavior only from `@mucyora/db`. This repository must
