@@ -65,7 +65,8 @@ target HMAC, state, and expiry. A conditional update changes `VERIFIED` to
 
 Challenge access, creation, assertion issuance, and consumption lazily expire
 due records using the status/expiry index and remove encrypted assertion
-material. Phase 11 will provide bounded scheduled cleanup.
+material. Phase 11 also removes terminal challenge records after the configured
+token-retention window.
 
 Recent-proof reuse is intentionally disabled. Every Phase 10 challenge creates
 a fresh Engine-backed attempt until a separately reviewed policy establishes
