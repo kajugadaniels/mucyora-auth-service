@@ -9,10 +9,10 @@ identity-verification orchestration.
 ## Current Implementation
 
 The repository contains a production-oriented HTTP and database foundation,
-security primitives, a private resilient NIDA adapter, and domain module
-shells. It exposes liveness and readiness endpoints. It does not yet expose
-registration, citizen lookup, login, token, password, or identity-verification
-application endpoints.
+security primitives, a private resilient NIDA adapter, and a citizen
+registration-initiation application flow. It exposes liveness, readiness, and
+the Phase 4 citizen lookup endpoint. It does not yet create accounts or expose
+login, token, password, or identity-verification application endpoints.
 
 ## Dependencies
 
@@ -47,8 +47,9 @@ Health liveness stops before all dependencies. Readiness performs only a cached
 database check in Phase 1.
 
 The citizen adapter is consumed through `CitizenIdentityProvider`; domain code
-must not depend on Axios, Redis, or provider response shapes. Phase 3 adds no
-public endpoint and no database mutation.
+does not depend on Axios or provider response shapes. Phase 4 adds a
+Redis-rate-limited public endpoint and persists only the encrypted minimized
+challenge state in the existing database contract.
 
 ## Ownership Rules
 
