@@ -6,6 +6,7 @@ import {
 } from './identity-encryption.service';
 import { IdempotencyService } from './idempotency.service';
 import { KeyedDigestService } from './keyed-digest.service';
+import { PasswordPolicyService } from './password-policy.service';
 import { TokenService } from './token.service';
 
 @Global()
@@ -18,12 +19,14 @@ import { TokenService } from './token.service';
     IdentityEncryptionService,
     IdempotencyService,
     KeyedDigestService,
+    PasswordPolicyService,
     TokenService,
   ],
   exports: [
     IdentityEncryptionService,
     IdempotencyService,
     KeyedDigestService,
+    PasswordPolicyService,
     TokenService,
   ],
 })
