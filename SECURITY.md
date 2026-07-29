@@ -49,6 +49,13 @@ identity providers without authorization, or publish an unpatched issue.
 - Liveness performs no dependency calls.
 - Readiness checks database availability and caches the result briefly.
 - Shutdown hooks close database connections.
+- Identity lookup uses a versioned keyed digest, not plain SHA-256.
+- Protected identity values use AES-256-GCM authenticated encryption.
+- Encryption, identity lookup, token, and request-context keys are
+  purpose-separated.
+- Opaque tokens use cryptographically secure randomness and digest-only
+  persistence contracts.
+- Security-event metadata rejects sensitive fields and structured payloads.
 
 ## Sensitive Data
 
@@ -63,9 +70,9 @@ Never log or return:
 - biometric images or raw provider responses;
 - private object-storage references.
 
-Future cryptography and token storage must follow the implementation plan and
-the reviewed database-change proposal. Phase 1 does not implement those
-primitives.
+Phase 2 cryptography and token utilities follow the implementation plan and
+reviewed database contract. They are reusable primitives only; later workflow
+phases must still use them correctly and atomically.
 
 ## Database Safety
 
@@ -92,4 +99,3 @@ Immediately escalate suspected leakage of credentials, signing material,
 tokens, NID data, biometric media, or database access. Preserve safe audit
 evidence, revoke affected access through an approved procedure, and avoid
 destroying records needed for investigation.
-
