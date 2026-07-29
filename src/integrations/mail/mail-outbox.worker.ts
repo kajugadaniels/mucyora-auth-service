@@ -116,10 +116,16 @@ export class MailOutboxWorker
     });
 
     let published = 0;
-    for (const event of events) {
-      if (await this.dispatchEvent(event)) {
-        published += 1;
-      }
+    const concurrency = this.config.get('OUTBOX_DELIVERY_CONCURRENCY', {
+      infer: true,
+    });
+    for (let offset = 0; offset < events.length; offset += concurrency) {
+      const results = await Promise.all(
+        events
+          .slice(offset, offset + concurrency)
+          .map((event) => this.dispatchEvent(event)),
+      );
+      published += results.filter(Boolean).length;
     }
     return published;
   }
