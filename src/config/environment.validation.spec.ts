@@ -57,6 +57,9 @@ describe('environment validation', () => {
     expect(environment.OPERATIONAL_JOB_BATCH_SIZE).toBe(50);
     expect(environment.OUTBOX_DELIVERY_CONCURRENCY).toBe(4);
     expect(environment.SECURITY_EVENT_RETENTION_DAYS).toBe(365);
+    expect(environment.MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON).toBe(
+      '[]',
+    );
   });
 
   it('rejects wildcard CORS origins', () => {
@@ -129,5 +132,19 @@ describe('environment validation', () => {
         MAIL_OUTBOX_WORKER_ENABLED: true,
       }),
     ).toThrow('enabled mail worker requires');
+  });
+
+  it('rejects private material in the JWT verification overlap ring', () => {
+    expect(() =>
+      validateEnvironment({
+        ...baseEnvironment,
+        MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON: JSON.stringify([
+          {
+            keyId: 'previous-key-2026',
+            publicKey: signingKeys.privateKey,
+          },
+        ]),
+      }),
+    ).toThrow('Auth signing keys must be valid RSA PEM keys');
   });
 });
