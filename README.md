@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 4 of the implementation plan is complete. In addition to the secure
+Phase 5 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -45,10 +45,15 @@ service foundation, Auth now provides:
 - encrypted, expiring, attempt-bounded registration challenges;
 - atomic single-use challenge lifecycle operations;
 - generic anti-enumeration errors and challenge audit events.
+- atomic NIDA-backed account registration;
+- Argon2id password hashing with bounded concurrency and a password blocklist;
+- encrypted identity creation and four versioned consent records;
+- digest-only, single-use email verification tokens;
+- generic, distributed-rate-limited email resend;
+- encrypted-token outbox events and asynchronous mail dispatch.
 
-Account creation, authentication, password, session, and
-identity-verification business functionality is not implemented yet. A Phase
-4 challenge does not create a user.
+Login, sessions, access tokens, password recovery/change, and biometric
+identity-verification business functionality is not implemented yet.
 
 ## Service Boundary
 
@@ -86,6 +91,9 @@ environment variables.
 | `GET` | `/health/live` | Process liveness without database or external calls |
 | `GET` | `/health/ready` | Cached database readiness |
 | `POST` | `/api/v1/registration/citizen/lookup` | Create an opaque, short-lived registration challenge |
+| `POST` | `/api/v1/registration` | Atomically create a pending account |
+| `POST` | `/api/v1/registration/email/verify` | Consume an email-verification token |
+| `POST` | `/api/v1/registration/email/resend` | Request a generic verification resend |
 
 Later application APIs will be mounted below `/api/v1` in their separately
 authorized phases.
@@ -165,6 +173,6 @@ documentation rules.
 ## Production Readiness
 
 The foundation is not a production-ready authentication product by itself.
-Later phases must still implement atomic account registration, email
-verification, sessions, recovery, identity verification, outbox processing,
-load testing, and release security gates.
+Later phases must still implement login, sessions, token rotation, password
+recovery, biometric identity verification, operational cleanup, load testing,
+and release security gates.
