@@ -2,13 +2,11 @@
 
 ## Purpose
 
-This document maps the behavior of
-`kajugadaniels/gracon-user-auth-service` at reference revision `a2affdc` to
-the MUCYORA service boundaries and implementation phases.
-
-The reference is behavioral input, not code to copy. MUCYORA keeps useful
-workflows while replacing legacy ownership, cryptography, persistence, and
-horizontal-scaling assumptions.
+This document maps the behavior of the prior MUCYORA authentication reference
+at revision `a2affdc` to the current service boundaries and implementation
+phases. The reference is behavioral input, not code to copy. MUCYORA keeps
+useful workflows while replacing legacy ownership, cryptography, persistence,
+and horizontal-scaling assumptions.
 
 ## Reference Inventory
 
@@ -119,4 +117,3 @@ environment values, database data, or provider systems were accessed. The
 archive contains source code but no canonical Prisma schema, so its persistence
 shape was inferred from generated-client usage, services, tests, documentation,
 and the current MUCYORA shared schema.
-
