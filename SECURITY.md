@@ -80,6 +80,18 @@ identity providers without authorization, or publish an unpatched issue.
 - Resend uses generic responses and keyed Redis limits by IP and email.
 - Mail delivery occurs after commit with per-event Redis locks and safe failure
   codes.
+- Access tokens use a matching Auth-owned RSA private key and public JWKS.
+- Access claims exclude identity/profile data and protected routes confirm the
+  database session remains active.
+- Unknown-account login performs dummy Argon2 verification and shares the
+  wrong-password response.
+- Refresh tokens are digest-only, generation-bound, atomically rotated, and
+  coordinated across replicas with Redis locks.
+- Reuse outside the grace period compromises only the affected session family
+  and creates a high-severity event.
+- Browser refresh cookies are scoped, HttpOnly, secure in production, and
+  protected by an HMAC-bound double-submit CSRF token.
+- Session revocation atomically revokes associated refresh records.
 
 ## Sensitive Data
 
@@ -107,7 +119,8 @@ minimized challenge and never creates a user account. The normalized email is
 bound to the challenge, while the plaintext NID is neither stored nor returned.
 
 Phase 5 consumes that challenge to create the account. It does not issue a
-session or access token; those controls remain Phase 6 work.
+session or access token. Phase 6 performs that work only after valid
+credentials and account gates.
 
 ## Database Safety
 
