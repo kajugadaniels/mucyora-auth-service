@@ -67,6 +67,7 @@ ACCESS_TOKEN_TTL_SECONDS=900
 LIMITED_ACCESS_TOKEN_TTL_SECONDS=900
 REFRESH_TOKEN_TTL_SECONDS=2592000
 REFRESH_REPLAY_GRACE_SECONDS=10
+SESSION_UPGRADE_IDEMPOTENCY_TTL_SECONDS=900
 LOGIN_LIMIT_PER_MINUTE=5
 REFRESH_LIMIT_PER_MINUTE=10
 LOGIN_LOCK_THRESHOLD=10
@@ -131,8 +132,8 @@ their runtime validation.
 - Enabling the mail worker requires a fixed provider URL, sender address, and
   an API key of at least 16 characters. Production mail requires HTTPS.
 - Signing keys must be a matching RSA PEM pair and have a stable key ID.
-- Access, limited-access, refresh, replay-grace, login, refresh, and lock
-  settings are bounded at startup.
+- Access, limited-access, refresh, replay-grace, session-upgrade idempotency,
+  login, refresh, and lock settings are bounded at startup.
 - Production requires secure authentication cookies.
 
 The port is deliberately absent because the service always uses port `3000`.
