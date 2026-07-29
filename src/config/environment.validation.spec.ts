@@ -14,6 +14,10 @@ describe('environment validation', () => {
     IDENTITY_LOOKUP_HMAC_KEY: 'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE',
     TOKEN_DIGEST_HMAC_KEY: 'AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI',
     REQUEST_CONTEXT_HMAC_KEY: 'AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM',
+    REDIS_URL: 'redis://localhost:6379',
+    CITIZEN_API_URL: 'http://localhost:3100/citizens/lookup',
+    CITIZEN_API_USERNAME: 'test-client',
+    CITIZEN_API_PASSWORD: 'test-password',
   };
 
   it('applies safe defaults', () => {
@@ -58,5 +62,23 @@ describe('environment validation', () => {
         TOKEN_DIGEST_HMAC_KEY: baseEnvironment.IDENTITY_LOOKUP_HMAC_KEY,
       }),
     ).toThrow('must differ');
+  });
+
+  it('rejects provider credentials embedded in the URL', () => {
+    expect(() =>
+      validateEnvironment({
+        ...baseEnvironment,
+        CITIZEN_API_URL: 'https://client:secret@identity.example/lookup',
+      }),
+    ).toThrow('without credentials');
+  });
+
+  it('requires encrypted provider transport in production', () => {
+    expect(() =>
+      validateEnvironment({
+        ...baseEnvironment,
+        APP_ENV: 'production',
+      }),
+    ).toThrow('CITIZEN_API_URL must use HTTPS');
   });
 });
