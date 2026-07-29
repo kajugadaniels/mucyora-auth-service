@@ -152,7 +152,10 @@ export class CitizenLookupService {
       throw this.unavailableIdentity();
     }
 
-    const snapshot = JSON.stringify(citizen);
+    const snapshot = JSON.stringify({
+      ...citizen,
+      normalizedNationalId: nationalId,
+    });
     const citizenSnapshotEncrypted = this.encryption.seal(
       snapshot,
       'citizen-snapshot',
