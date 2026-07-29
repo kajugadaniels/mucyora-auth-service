@@ -25,10 +25,18 @@ Never log passwords, raw tokens, NID/PID plaintext, encryption keys, biometric
 media, S3 object contents, or full provider payloads. Store only the minimum
 identity evidence required by policy.
 
+Phase 2 uses versioned HMAC-SHA-256 rather than plain NID hashes and
+AES-256-GCM with purpose-bound authenticated data rather than unauthenticated
+encryption. Token and request-context digests use separate keys.
+
+Startup rejects malformed, undersized, or reused purpose keys. Do not place
+real keys in `.env.example`, tests, documentation, or Git history.
+
 ## Audit
 
 Record login outcomes, verification outcomes, password changes, session
 revocation, token reuse, and rate-limit events without sensitive payloads.
 
 Structured JSON application logs are implemented, but durable authentication
-security events are deferred until the Phase 2 database contract exists.
+security events now have a shared schema and a minimized writer. Workflow event
+emission begins only when each corresponding phase is implemented.
