@@ -1,8 +1,9 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import Redis from 'ioredis';
+import { ensureRedisConnected } from '../redis/redis-connection';
+import { REDIS_CLIENT } from '../redis/redis.module';
 
 export const CITIZEN_CACHE = Symbol('CITIZEN_CACHE');
-export const REDIS_CLIENT = Symbol('REDIS_CLIENT');
 
 export interface CitizenCache {
   get(key: string): Promise<string | null>;
@@ -37,8 +38,6 @@ export class RedisCitizenCache implements CitizenCache, OnApplicationShutdown {
   }
 
   private async connectIfNeeded(): Promise<void> {
-    if (this.redis.status === 'wait') {
-      await this.redis.connect();
-    }
+    await ensureRedisConnected(this.redis);
   }
 }
