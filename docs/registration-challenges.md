@@ -60,9 +60,9 @@ payload.
 - The normalized email and versioned NID HMAC are stored; the plaintext NID is
   not stored.
 
-Phase 4 only creates challenges. It does not create a user, credential,
-consent, verification token, session, or outbox event. Those registration
-actions remain Phase 5 work.
+Phase 4 creates challenges. Phase 5 consumes them atomically to create a user,
+credential, identity, consents, verification token, audit record, and outbox
+event. Session and login behavior remains deferred.
 
 ## Distributed Abuse Controls
 
@@ -99,4 +99,4 @@ short transaction performs only:
 3. minimized security-event creation.
 
 No NIDA, Redis, email, object-storage, or Engine call occurs inside the
-transaction.
+challenge-creation transaction.
