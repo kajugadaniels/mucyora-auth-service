@@ -8,10 +8,11 @@ identity-verification orchestration.
 
 ## Current Implementation
 
-The repository contains a production-oriented HTTP and database foundation plus
-domain module shells. It exposes liveness and readiness endpoints. It does not
-yet implement registration, login, tokens, password workflows, NIDA calls, or
-identity verification.
+The repository contains a production-oriented HTTP and database foundation,
+security primitives, a private resilient NIDA adapter, and domain module
+shells. It exposes liveness and readiness endpoints. It does not yet expose
+registration, citizen lookup, login, token, password, or identity-verification
+application endpoints.
 
 ## Dependencies
 
@@ -19,6 +20,8 @@ identity verification.
 Client
   -> api/auth
        -> @mucyora/db
+       -> NIDA provider (private adapter)
+       -> Redis (encrypted positive provider cache)
        -> api/engine (internal identity-verification computation)
 ```
 
@@ -42,6 +45,10 @@ HTTP request
 
 Health liveness stops before all dependencies. Readiness performs only a cached
 database check in Phase 1.
+
+The citizen adapter is consumed through `CitizenIdentityProvider`; domain code
+must not depend on Axios, Redis, or provider response shapes. Phase 3 adds no
+public endpoint and no database mutation.
 
 ## Ownership Rules
 
