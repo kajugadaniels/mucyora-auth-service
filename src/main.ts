@@ -1,7 +1,6 @@
 import { LogLevel, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -10,6 +9,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import { JsonLogger } from './common/logging/json.logger';
 import { buildCorsOptions } from './common/security/cors.config';
 import { createDocsBasicAuthMiddleware } from './common/security/docs-basic-auth.middleware';
+import { setupAuthSwagger } from './openapi';
 
 const AUTH_SERVICE_PORT = 3000;
 const REQUEST_BODY_LIMIT = '256kb';
@@ -71,19 +71,7 @@ function configureSwagger(
     app.use('/api/docs-json', protectDocs);
   }
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('MUCYORA Auth Service')
-    .setDescription(
-      'Authentication and identity-verification orchestration API',
-    )
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  SwaggerModule.setup(
-    'api/docs',
-    app,
-    SwaggerModule.createDocument(app, swaggerConfig),
-  );
+  setupAuthSwagger(app);
 }
 
 function resolveBootstrapLogLevel(value?: string): LogLevel {
