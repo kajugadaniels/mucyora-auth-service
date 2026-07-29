@@ -26,6 +26,8 @@ describe('environment validation', () => {
     expect(environment.ENABLE_SWAGGER).toBe(false);
     expect(environment.CORS_ALLOWED_ORIGINS).toBe('http://localhost:4000');
     expect(environment.READINESS_CACHE_TTL_MS).toBe(5_000);
+    expect(environment.REGISTRATION_CHALLENGE_TTL_SECONDS).toBe(600);
+    expect(environment.REGISTRATION_CHALLENGE_MAX_ATTEMPTS).toBe(3);
   });
 
   it('rejects wildcard CORS origins', () => {
@@ -80,5 +82,14 @@ describe('environment validation', () => {
         APP_ENV: 'production',
       }),
     ).toThrow('CITIZEN_API_URL must use HTTPS');
+  });
+
+  it('rejects long-lived registration challenges', () => {
+    expect(() =>
+      validateEnvironment({
+        ...baseEnvironment,
+        REGISTRATION_CHALLENGE_TTL_SECONDS: 901,
+      }),
+    ).toThrow('REGISTRATION_CHALLENGE_TTL_SECONDS');
   });
 });
