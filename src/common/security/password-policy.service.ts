@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import argon2 from 'argon2';
+import type { HashOptions } from 'argon2';
 
 import { AuthEnvironment } from '../../config/environment.validation';
 
@@ -19,27 +20,40 @@ const COMMON_PASSWORDS = new Set([
 export class PasswordPolicyService {
   private activeHashes = 0;
   private readonly waiters: Array<() => void> = [];
+  private readonly dummyHash: Promise<string>;
 
-  constructor(private readonly config: ConfigService<AuthEnvironment, true>) {}
+  constructor(private readonly config: ConfigService<AuthEnvironment, true>) {
+    this.dummyHash = argon2.hash(
+      'MUCYORA synthetic unavailable credential 2026',
+      this.options(),
+    );
+  }
 
   async hash(password: string, emailNormalized: string): Promise<string> {
     this.assertAcceptable(password, emailNormalized);
     await this.acquire();
 
     try {
-      return await argon2.hash(password, {
-        type: argon2.argon2id,
-        memoryCost: this.config.get('PASSWORD_ARGON2_MEMORY_KIB', {
-          infer: true,
-        }),
-        timeCost: this.config.get('PASSWORD_ARGON2_TIME_COST', { infer: true }),
-        parallelism: this.config.get('PASSWORD_ARGON2_PARALLELISM', {
-          infer: true,
-        }),
-      });
+      return await argon2.hash(password, this.options());
     } finally {
       this.release();
     }
+  }
+
+  async verify(hash: string, password: string): Promise<boolean> {
+    try {
+      return await argon2.verify(hash, password);
+    } catch {
+      return false;
+    }
+  }
+
+  async verifyDummy(password: string): Promise<void> {
+    await this.verify(await this.dummyHash, password);
+  }
+
+  needsRehash(hash: string): boolean {
+    return argon2.needsRehash(hash, this.options());
   }
 
   assertAcceptable(password: string, emailNormalized: string): void {
@@ -74,5 +88,18 @@ export class PasswordPolicyService {
   private release(): void {
     this.activeHashes -= 1;
     this.waiters.shift()?.();
+  }
+
+  private options(): HashOptions & { raw?: false } {
+    return {
+      type: argon2.argon2id,
+      memoryCost: this.config.get('PASSWORD_ARGON2_MEMORY_KIB', {
+        infer: true,
+      }),
+      timeCost: this.config.get('PASSWORD_ARGON2_TIME_COST', { infer: true }),
+      parallelism: this.config.get('PASSWORD_ARGON2_PARALLELISM', {
+        infer: true,
+      }),
+    };
   }
 }
