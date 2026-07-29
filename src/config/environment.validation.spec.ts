@@ -44,6 +44,7 @@ describe('environment validation', () => {
     expect(environment.READINESS_CACHE_TTL_MS).toBe(5_000);
     expect(environment.REGISTRATION_CHALLENGE_TTL_SECONDS).toBe(600);
     expect(environment.REGISTRATION_CHALLENGE_MAX_ATTEMPTS).toBe(3);
+    expect(environment.SESSION_UPGRADE_IDEMPOTENCY_TTL_SECONDS).toBe(900);
   });
 
   it('rejects wildcard CORS origins', () => {
