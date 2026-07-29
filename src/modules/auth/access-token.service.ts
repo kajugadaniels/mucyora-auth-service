@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { SessionLevel } from '@mucyora/db';
 
 import { AuthEnvironment } from '../../config/environment.validation';
+import { parsePreviousSigningKeys } from '../../config/environment.validation';
 
 export interface AccessTokenClaims {
   iss: string;
@@ -29,6 +30,10 @@ export interface AccessTokenClaims {
 export class AccessTokenService {
   private readonly privateKey;
   private readonly publicKey;
+  private readonly verificationKeys: Map<
+    string,
+    ReturnType<typeof createPublicKey>
+  >;
   private readonly keyId: string;
   private readonly issuer: string;
   private readonly audiences: string[];
@@ -41,6 +46,18 @@ export class AccessTokenService {
       config.get('MUCYORA_AUTH_SIGNING_PUBLIC_KEY', { infer: true }),
     );
     this.keyId = config.get('MUCYORA_AUTH_SIGNING_KEY_ID', { infer: true });
+    this.verificationKeys = new Map([[this.keyId, this.publicKey]]);
+    for (const previous of parsePreviousSigningKeys(
+      config.get('MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON', {
+        infer: true,
+      }),
+      this.keyId,
+    )) {
+      this.verificationKeys.set(
+        previous.keyId,
+        createPublicKey(previous.publicKey),
+      );
+    }
     this.issuer = config.get('MUCYORA_AUTH_ISSUER', { infer: true });
     this.audiences = config
       .get('MUCYORA_AUTH_ACCESS_AUDIENCES', { infer: true })
@@ -99,17 +116,21 @@ export class AccessTokenService {
       const [encodedHeader, encodedPayload, encodedSignature] = parts;
       const header = decodeJson(encodedHeader) as Record<string, unknown>;
       const claims = decodeJson(encodedPayload) as AccessTokenClaims;
+      const verificationKey =
+        typeof header.kid === 'string'
+          ? this.verificationKeys.get(header.kid)
+          : undefined;
       const validSignature = verify(
         'RSA-SHA256',
         Buffer.from(`${encodedHeader}.${encodedPayload}`, 'ascii'),
-        this.publicKey,
+        verificationKey ?? this.publicKey,
         Buffer.from(encodedSignature, 'base64url'),
       );
       const now = Math.floor(Date.now() / 1_000);
       if (
         !validSignature ||
+        !verificationKey ||
         header.alg !== 'RS256' ||
-        header.kid !== this.keyId ||
         claims.iss !== this.issuer ||
         claims.tokenType !== 'ACCESS' ||
         claims.exp <= now ||
@@ -128,16 +149,13 @@ export class AccessTokenService {
   }
 
   jwks(): { keys: Array<Record<string, unknown>> } {
-    const jwk = this.publicKey.export({ format: 'jwk' });
     return {
-      keys: [
-        {
-          ...jwk,
-          kid: this.keyId,
-          alg: 'RS256',
-          use: 'sig',
-        },
-      ],
+      keys: [...this.verificationKeys.entries()].map(([keyId, publicKey]) => ({
+        ...publicKey.export({ format: 'jwk' }),
+        kid: keyId,
+        alg: 'RS256',
+        use: 'sig',
+      })),
     };
   }
 }
