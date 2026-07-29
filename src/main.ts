@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { JsonLogger } from './common/logging/json.logger';
@@ -24,6 +25,7 @@ async function bootstrap() {
   app.useLogger(new JsonLogger(config.getOrThrow<LogLevel>('LOG_LEVEL')));
   app.enableShutdownHooks();
   app.use(helmet());
+  app.use(cookieParser());
   app.use(json({ limit: REQUEST_BODY_LIMIT }));
   app.use(urlencoded({ extended: false, limit: REQUEST_BODY_LIMIT }));
   app.enableCors(
@@ -33,6 +35,7 @@ async function bootstrap() {
     exclude: [
       { path: 'health/live', method: RequestMethod.GET },
       { path: 'health/ready', method: RequestMethod.GET },
+      { path: '.well-known/jwks.json', method: RequestMethod.GET },
     ],
   });
   app.useGlobalPipes(
