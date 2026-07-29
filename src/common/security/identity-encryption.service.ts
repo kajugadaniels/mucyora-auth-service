@@ -12,7 +12,10 @@ export type IdentityNonceFactory = (size: number) => Buffer;
 export const defaultIdentityNonceFactory: IdentityNonceFactory = randomBytes;
 
 export type IdentityEncryptionPurpose =
-  'rwanda-nid' | 'citizen-snapshot' | 'verification-media-reference';
+  | 'rwanda-nid'
+  | 'citizen-snapshot'
+  | 'registration-challenge-token'
+  | 'verification-media-reference';
 
 export interface IdentityEncryptionEnvelope {
   format: typeof FORMAT;
