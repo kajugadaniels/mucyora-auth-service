@@ -164,6 +164,21 @@ result. The upgrade-only guard accepts the just-revoked limited access token
 solely when its revocation reason proves a completed upgrade; all normal
 protected routes continue to reject revoked sessions.
 
+Phase 10 requires a full authenticated session to create a fresh-verification
+challenge. The challenge stores an HMAC of the target resource, never the raw
+target, and is bound to one user, session, purpose, verification attempt, policy
+version, and expiry.
+
+Successful fresh verification produces a short-lived opaque assertion. Only
+its keyed digest and a purpose-bound AES-GCM replay envelope are persisted.
+`api/user`, `api/signature`, and Auth Recovery authenticate with separate
+service credentials and may consume only their assigned purpose. Consumption
+checks the user, purpose, target HMAC, status, and expiry before a conditional
+one-time state transition; replay and cross-purpose use fail closed.
+
+Step-up completion never upgrades permanent identity state. Recent-proof reuse
+is deliberately disabled until a reviewed policy defines when it is safe.
+
 ## Database Safety
 
 Auth imports database behavior only from `@mucyora/db`. This repository must
