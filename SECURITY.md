@@ -214,6 +214,11 @@ Deployment uses an immutable image digest, non-root identity, read-only
 filesystem, dropped Linux capabilities, bounded resources, health probes, and
 staged promotion. Codex does not deploy automatically.
 
+Swagger is disabled by default and production access is authenticated. Its
+committed OpenAPI contract contains only fictional Rwanda-specific examples.
+Real names, NIDs, telephone numbers, emails, tokens, credentials, and provider
+responses are forbidden in generated or hand-written API documentation.
+
 ## Database Safety
 
 Auth imports database behavior only from `@mucyora/db`. This repository must
