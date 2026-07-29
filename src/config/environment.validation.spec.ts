@@ -29,6 +29,11 @@ describe('environment validation', () => {
     MUCYORA_AUTH_SIGNING_KEY_ID: 'test-key-2026',
     MUCYORA_AUTH_SIGNING_PRIVATE_KEY: signingKeys.privateKey,
     MUCYORA_AUTH_SIGNING_PUBLIC_KEY: signingKeys.publicKey,
+    AWS_S3_VERIFICATION_BUCKET: 'mucyora-verification-test',
+    VERIFICATION_POLICY_VERSION: '2026-07-01',
+    MUCYORA_ENGINE_URL: 'http://localhost:8000',
+    MUCYORA_ENGINE_SERVICE_KEY:
+      'test-engine-service-key-at-least-thirty-two-bytes',
   };
 
   it('applies safe defaults', () => {
