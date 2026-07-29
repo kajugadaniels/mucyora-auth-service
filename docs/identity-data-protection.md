@@ -108,3 +108,13 @@ The durable challenge contains an encrypted minimized citizen snapshot and a
 keyed snapshot digest. Its returned token encrypts the challenge identifier
 under the separate `registration-challenge-token` purpose. The token does not
 reveal the database UUID.
+
+The encrypted challenge snapshot also carries the authoritative normalized NID
+needed by Phase 5. It remains inside AES-GCM ciphertext and is never returned,
+logged, or placed in Redis citizen cache values. Registration decrypts it only
+in memory, verifies both snapshot and identity HMACs, then creates the
+purpose-bound encrypted identity record.
+
+Email verification token rows store only keyed digests. Outbox events contain
+an AES-GCM encrypted token under the separate `email-verification-token`
+purpose, never plaintext token material.
