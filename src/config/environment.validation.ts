@@ -108,6 +108,21 @@ const environmentSchema = Joi.object({
     .min(1)
     .max(16)
     .default(4),
+  PASSWORD_RESET_TOKEN_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(300)
+    .max(3_600)
+    .default(900),
+  PASSWORD_RESET_LIMIT_PER_HOUR: Joi.number()
+    .integer()
+    .min(1)
+    .max(20)
+    .default(3),
+  PASSWORD_CHANGE_LIMIT_PER_HOUR: Joi.number()
+    .integer()
+    .min(1)
+    .max(20)
+    .default(5),
   EMAIL_TOKEN_TTL_SECONDS: Joi.number()
     .integer()
     .min(900)
@@ -213,6 +228,9 @@ export interface AuthEnvironment {
   PASSWORD_ARGON2_TIME_COST: number;
   PASSWORD_ARGON2_PARALLELISM: number;
   PASSWORD_HASH_MAX_CONCURRENCY: number;
+  PASSWORD_RESET_TOKEN_TTL_SECONDS: number;
+  PASSWORD_RESET_LIMIT_PER_HOUR: number;
+  PASSWORD_CHANGE_LIMIT_PER_HOUR: number;
   EMAIL_TOKEN_TTL_SECONDS: number;
   REGISTRATION_LIMIT_PER_HOUR: number;
   EMAIL_RESEND_LIMIT_PER_HOUR: number;
