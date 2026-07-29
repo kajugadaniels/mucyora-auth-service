@@ -1,0 +1,16 @@
+export const RWANDA_OPENAPI_EXAMPLES = {
+  email: 'aline.uwase@example.rw',
+  nid: '1199980012345678',
+  surname: 'Uwase',
+  givenNames: 'Aline',
+  phone: '+250 788 000 001',
+  dateOfBirth: '1999-08-01',
+  deviceId: 'android-kigali-0001',
+  deviceLabel: 'Aline Pixel – Kigali',
+  userId: '7ac6e3c6-50d7-4c42-87fd-c5be13f20ad2',
+  attemptId: 'e9b5dc65-6fe8-4b0d-9b65-56ca8560da44',
+  challengeId: '1aa96cda-f8d7-4473-bcb4-f626b9d3ad8d',
+  sessionId: '7e242530-ed95-44f6-83cb-f67f5e989950',
+  opaqueToken: 'RwandaSyntheticToken_000000000000000000000000000000000001',
+  targetResourceId: 'device-transfer-kigali-0001',
+} as const;
