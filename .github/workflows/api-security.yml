@@ -1,0 +1,69 @@
+name: Auth API checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out Auth
+        uses: actions/checkout@v4
+        with:
+          path: auth
+
+      - name: Check out shared database package
+        uses: actions/checkout@v4
+        with:
+          repository: kajugadaniels/mucyora-db-v2
+          path: db
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            auth/package-lock.json
+            db/package-lock.json
+
+      - name: Install and build shared database package
+        working-directory: db
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install Auth dependencies
+        working-directory: auth
+        run: npm ci
+
+      - name: Run project boundary check
+        working-directory: auth
+        run: npm run check:boundary
+
+      - name: Run lint
+        working-directory: auth
+        run: npm run lint:check
+
+      - name: Build
+        working-directory: auth
+        run: npm run build
+
+      - name: Run unit tests
+        working-directory: auth
+        run: npm test -- --runInBand
+
+      - name: Run end-to-end tests
+        working-directory: auth
+        env:
+          APP_ENV: test
+          DATABASE_URL: postgresql://mucyora_auth_app:placeholder@localhost:5432/mucyora
+        run: npm run test:e2e -- --runInBand
