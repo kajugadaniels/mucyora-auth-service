@@ -297,6 +297,9 @@ export class IdentityVerificationService {
             input.objectKey,
             'verification-media-reference',
           ),
+          objectReferenceDigest: this.storage.objectReferenceDigest(
+            input.objectKey,
+          ),
           objectVersion: confirmed.objectVersion,
           checksum: confirmed.checksum,
           contentType: confirmed.contentType,
