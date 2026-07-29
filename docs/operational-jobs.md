@@ -64,4 +64,5 @@ The response contains only timestamps, safe status codes, and aggregate
 counts. Dead letters and cycle failures emit structured
 `operational_job_alert` events without exception or payload details.
 
-Phase 12 still owns load testing, query-plan measurement, and SLO validation.
+Phase 12 defines load tests, query-plan tooling, bounded delivery concurrency,
+and SLO validation. Approved staging evidence remains required before release.
