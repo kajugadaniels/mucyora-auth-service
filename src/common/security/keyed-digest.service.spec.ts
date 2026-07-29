@@ -33,7 +33,8 @@ describe('KeyedDigestService', () => {
         service.identityLookup(value),
         service.token(value),
         service.requestContext(value),
+        service.citizenSnapshot(value),
       ]).size,
-    ).toBe(3);
+    ).toBe(4);
   });
 });
