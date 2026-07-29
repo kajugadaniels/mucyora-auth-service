@@ -21,6 +21,7 @@ import { RegistrationModule } from './modules/registration/registration.module';
 import { SecurityEventsModule } from './modules/security-events/security-events.module';
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { StepUpVerificationModule } from './modules/step-up-verification/step-up-verification.module';
+import { OperationsModule } from './modules/operations/operations.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { StepUpVerificationModule } from './modules/step-up-verification/step-up
     OtpModule,
     SecurityEventsModule,
     StepUpVerificationModule,
+    OperationsModule,
     HealthModule,
     CommonModule,
   ],
