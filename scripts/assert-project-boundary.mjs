@@ -13,6 +13,7 @@ const forbiddenPaths = [
   'src/modules/signatures',
 ];
 const forbiddenPackages = ['@prisma/client', 'prisma'];
+const forbiddenEnvironmentNames = ['DATABASE_MIGRATION_URL'];
 
 const violations = [];
 
@@ -46,6 +47,13 @@ for (const file of await collectFiles(join(projectRoot, 'src'))) {
     violations.push(
       `direct Prisma client import: ${relative(projectRoot, file)}`,
     );
+  }
+  for (const environmentName of forbiddenEnvironmentNames) {
+    if (content.includes(environmentName)) {
+      violations.push(
+        `migration-only environment reference in Auth runtime: ${relative(projectRoot, file)}`,
+      );
+    }
   }
 }
 
@@ -88,4 +96,3 @@ async function collectFiles(directory) {
 
   return files;
 }
-
