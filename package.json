@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "benchmark:security": "ts-node scripts/benchmark-security-primitives.ts",
     "check:boundary": "node scripts/assert-project-boundary.mjs",
     "check": "npm run check:boundary && npm run lint:check && npm run build && npm test -- --runInBand && npm run test:e2e -- --runInBand",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
