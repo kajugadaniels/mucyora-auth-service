@@ -32,6 +32,31 @@ export class MailTemplateService {
       html: '<p>Your email is verified.</p><p>Continue with identity verification in MUCYORA.</p>',
     };
   }
+
+  passwordReset(recipient: string, token: string): MailMessage {
+    const actionUrl = new URL(
+      '/reset-password',
+      this.config.get('MUCYORA_USER_APP_URL', { infer: true }),
+    );
+    actionUrl.searchParams.set('token', token);
+    const escapedUrl = escapeHtml(actionUrl.toString());
+
+    return {
+      recipient,
+      subject: 'Reset your MUCYORA password',
+      text: `Reset your password by opening this link: ${actionUrl.toString()}`,
+      html: `<p>A password reset was requested for your MUCYORA account.</p><p><a href="${escapedUrl}">Reset password</a></p><p>If you did not request this, you can ignore this email.</p>`,
+    };
+  }
+
+  passwordChanged(recipient: string): MailMessage {
+    return {
+      recipient,
+      subject: 'Your MUCYORA password was changed',
+      text: 'Your MUCYORA password was changed. If this was not you, contact support immediately.',
+      html: '<p>Your MUCYORA password was changed.</p><p>If this was not you, contact support immediately.</p>',
+    };
+  }
 }
 
 function escapeHtml(value: string): string {
