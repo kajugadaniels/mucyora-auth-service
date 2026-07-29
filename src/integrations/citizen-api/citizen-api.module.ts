@@ -3,14 +3,10 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import http from 'node:http';
 import https from 'node:https';
-import Redis from 'ioredis';
 
 import { AuthEnvironment } from '../../config/environment.validation';
-import {
-  CITIZEN_CACHE,
-  REDIS_CLIENT,
-  RedisCitizenCache,
-} from './citizen-cache.service';
+import { RedisModule } from '../redis/redis.module';
+import { CITIZEN_CACHE, RedisCitizenCache } from './citizen-cache.service';
 import { CitizenCircuitBreaker } from './citizen-circuit-breaker';
 import { CITIZEN_IDENTITY_PROVIDER } from './citizen-identity-provider';
 import { CitizenMetricsService } from './citizen-metrics.service';
@@ -23,6 +19,7 @@ import { CitizenResponseMapper } from './citizen-response.mapper';
 
 @Module({
   imports: [
+    RedisModule,
     HttpModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService<AuthEnvironment, true>) => ({
@@ -53,19 +50,6 @@ import { CitizenResponseMapper } from './citizen-response.mapper';
     CitizenMetricsService,
     NidaCitizenAdapter,
     RedisCitizenCache,
-    {
-      provide: REDIS_CLIENT,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService<AuthEnvironment, true>) =>
-        new Redis(config.get('REDIS_URL', { infer: true }), {
-          lazyConnect: true,
-          enableOfflineQueue: false,
-          maxRetriesPerRequest: 1,
-          connectTimeout: config.get('CITIZEN_API_CONNECT_TIMEOUT_MS', {
-            infer: true,
-          }),
-        }),
-    },
     {
       provide: CITIZEN_CACHE,
       useExisting: RedisCitizenCache,
