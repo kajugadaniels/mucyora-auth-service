@@ -16,20 +16,22 @@ user access tokens.
 
 ## Current Status
 
-This repository is an early scaffold. The application currently exposes the
-Nest starter `GET /` endpoint. Domain module boundaries exist for:
+Phase 1 of the implementation plan is complete. The service now provides a
+production-oriented NestJS foundation with:
 
-- authentication;
-- registration;
-- identity verification;
-- sessions;
-- password management;
-- OTP;
-- health checks;
-- shared infrastructure.
+- strict startup environment validation;
+- exact-origin credentialed CORS;
+- Helmet and bounded request bodies;
+- global DTO validation and safe exception responses;
+- correlation IDs and structured JSON logging;
+- shared database lifecycle management through `@mucyora/db`;
+- separate dependency-free liveness and database readiness routes;
+- disabled-by-default API documentation;
+- graceful shutdown, boundary checks, container packaging, and CI checks.
 
-Those modules do not yet contain controllers or business logic. Treat the list
-as intended ownership, not as a claim that the APIs are implemented.
+Authentication, registration, NIDA, password, session, and identity-verification
+business functionality is not implemented yet. Existing domain modules remain
+ownership shells.
 
 ## Service Boundary
 
@@ -60,11 +62,22 @@ http://localhost:3000
 The port is intentionally fixed in `src/main.ts` and is not overridden by
 environment variables.
 
+## Implemented Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/health/live` | Process liveness without database or external calls |
+| `GET` | `/health/ready` | Cached database readiness |
+
+Application APIs will be mounted below `/api/v1` in their separately
+authorized phases.
+
 ## Setup
 
 ```bash
 cp .env.example .env
 npm install
+npm run check:boundary
 npm run build
 npm run start:dev
 ```
@@ -76,6 +89,8 @@ The shared Prisma client must already be generated and built in `api/db`.
 | Command | Purpose |
 |---|---|
 | `npm run start:dev` | Run in watch mode on port 3000 |
+| `npm run check` | Run boundary, lint, build, unit, and e2e checks |
+| `npm run check:boundary` | Reject forbidden Prisma and cross-domain ownership |
 | `npm run build` | Compile the service |
 | `npm run start:prod` | Run compiled output |
 | `npm run test` | Run unit tests |
@@ -94,13 +109,30 @@ The shared Prisma client must already be generated and built in `api/db`.
 
 ## Security Baseline
 
-- Hash passwords with an approved adaptive password hash.
-- Store reset, verification, refresh, and OTP tokens as hashes.
-- Keep access and refresh token lifetimes explicit and bounded.
-- Rate-limit registration, login, OTP, recovery, and verification endpoints.
+- Keep `ENABLE_SWAGGER=false` unless documentation is explicitly required.
+- Use a production documentation password of at least 16 characters when
+  Swagger is enabled.
+- Configure only exact origins in `CORS_ALLOWED_ORIGINS`; wildcards are
+  rejected.
 - Never log passwords, raw tokens, plaintext government identifiers, biometric
   media, or connection strings.
-- Keep calls to `api/engine` authenticated and internal.
+- Use only `mucyora_auth_app` in the production `DATABASE_URL`.
+- Keep future calls to `api/engine` authenticated and internal.
+
+Credential hashing, token storage, rate limiting, and identity encryption are
+requirements for later phases and are not claimed as implemented.
+
+## Container Build
+
+The image needs both sibling projects because Auth consumes the local
+`@mucyora/db` package. From the `api` directory, run:
+
+```bash
+docker build -f auth/Dockerfile -t mucyora-auth .
+```
+
+The final image runs as a non-root user and uses `/health/live` for its
+container health check.
 
 ## Documentation
 
@@ -110,7 +142,7 @@ documentation rules.
 
 ## Production Readiness
 
-Before production, replace the starter endpoint with explicit health/readiness
-routes and implement global validation, safe exception handling, Helmet, strict
-CORS, rate limiting, structured logging, secret management, and complete
-authentication tests.
+The foundation is not a production-ready authentication product by itself.
+Later phases must still implement and validate cryptography, distributed rate
+limiting, NIDA resilience, registration, sessions, recovery, verification,
+outbox processing, load testing, and release security gates.
