@@ -92,4 +92,13 @@ describe('environment validation', () => {
       }),
     ).toThrow('REGISTRATION_CHALLENGE_TTL_SECONDS');
   });
+
+  it('requires complete mail configuration when the worker is enabled', () => {
+    expect(() =>
+      validateEnvironment({
+        ...baseEnvironment,
+        MAIL_OUTBOX_WORKER_ENABLED: true,
+      }),
+    ).toThrow('enabled mail worker requires');
+  });
 });
