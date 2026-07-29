@@ -110,20 +110,26 @@ export class VerificationCleanupService
         }
         const legacyScanComplete =
           legacyMedia.length < batchSize && !unreadableLegacyReference;
+        const pageDigests = page.objects.map((object) =>
+          this.storage.objectReferenceDigest(object.key),
+        );
+        const trackedMedia = await this.database.verificationMedia.findMany({
+          where: { objectReferenceDigest: { in: pageDigests } },
+          select: { objectReferenceDigest: true },
+        });
+        const trackedDigests = new Set(
+          trackedMedia.flatMap(({ objectReferenceDigest }) =>
+            objectReferenceDigest ? [objectReferenceDigest] : [],
+          ),
+        );
         let deleted = 0;
         for (const object of page.objects) {
           if (object.lastModified > cutoff) {
             continue;
           }
           const digest = this.storage.objectReferenceDigest(object.key);
-          const tracked = await this.database.verificationMedia.findUnique({
-            where: {
-              objectReferenceDigest: digest,
-            },
-            select: { id: true },
-          });
           const legacyId = legacyByDigest.get(digest);
-          if (!legacyId && !tracked && legacyScanComplete) {
+          if (!legacyId && !trackedDigests.has(digest) && legacyScanComplete) {
             try {
               await this.storage.deleteObject(object.key);
               deleted += 1;
