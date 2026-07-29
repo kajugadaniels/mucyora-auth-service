@@ -55,6 +55,7 @@ describe('environment validation', () => {
     expect(environment.STEP_UP_CHALLENGE_TTL_SECONDS).toBe(600);
     expect(environment.STEP_UP_ASSERTION_TTL_SECONDS).toBe(300);
     expect(environment.OPERATIONAL_JOB_BATCH_SIZE).toBe(50);
+    expect(environment.OUTBOX_DELIVERY_CONCURRENCY).toBe(4);
     expect(environment.SECURITY_EVENT_RETENTION_DAYS).toBe(365);
   });
 
