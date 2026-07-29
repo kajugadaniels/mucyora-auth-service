@@ -11,9 +11,9 @@ identity-verification orchestration.
 The repository contains a production-oriented HTTP and database foundation,
 security primitives, a private resilient NIDA adapter, citizen registration,
 email verification, and asynchronous mail dispatch. It exposes liveness,
-readiness, and Phase 4–5 registration endpoints. Login, sessions, access
-tokens, password recovery, and biometric identity-verification endpoints remain
-unimplemented.
+readiness, Phase 4–5 registration, and Phase 6 authentication/session
+endpoints. Password recovery and biometric identity-verification endpoints
+remain unimplemented.
 
 ## Dependencies
 
