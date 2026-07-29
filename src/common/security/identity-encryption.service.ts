@@ -14,6 +14,7 @@ export const defaultIdentityNonceFactory: IdentityNonceFactory = randomBytes;
 export type IdentityEncryptionPurpose =
   | 'rwanda-nid'
   | 'citizen-snapshot'
+  | 'email-verification-token'
   | 'registration-challenge-token'
   | 'verification-media-reference';
 
