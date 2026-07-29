@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 11 of the implementation plan is complete. In addition to the secure
+Phase 12 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -82,6 +82,10 @@ service foundation, Auth now provides:
 - bounded token, session, attempt, assertion, and security-event cleanup;
 - legal-hold-aware media deletion and paginated orphan reconciliation;
 - minimized internal operational job status and structured alerts.
+- synthetic k6 login, refresh, race, cache, and soak profiles;
+- measured Argon2, refresh-orchestration, cryptography, and runtime soak tools;
+- gated JSON query-plan inspection for disposable database branches;
+- low-cardinality request latency telemetry and a machine-readable SLO dashboard.
 
 ## Service Boundary
 
@@ -227,5 +231,5 @@ documentation rules.
 
 ## Production Readiness
 
-The service is not yet a production-ready authentication product. Phase 12
-load validation and Phase 13 release security gates remain required.
+The service is not yet a production-ready authentication product. Approved
+staging load evidence and Phase 13 release security gates remain required.
