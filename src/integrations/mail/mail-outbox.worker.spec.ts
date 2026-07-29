@@ -159,6 +159,7 @@ function workerConfig(): ConfigService<AuthEnvironment, true> {
   const values: Partial<AuthEnvironment> = {
     CACHE_PREFIX: 'mucyora:auth:',
     OUTBOX_BATCH_SIZE: 20,
+    OUTBOX_DELIVERY_CONCURRENCY: 4,
     OUTBOX_MAX_ATTEMPTS: 10,
     OUTBOX_LEASE_SECONDS: 120,
     OUTBOX_RETRY_BASE_SECONDS: 30,
