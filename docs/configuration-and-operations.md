@@ -23,6 +23,18 @@ IDENTITY_LOOKUP_KEY_VERSION=v1
 IDENTITY_LOOKUP_HMAC_KEY=
 TOKEN_DIGEST_HMAC_KEY=
 REQUEST_CONTEXT_HMAC_KEY=
+REDIS_URL=redis://localhost:6379
+CACHE_PREFIX=mucyora:auth:
+CITIZEN_API_URL=http://127.0.0.1:3100/citizens/lookup
+CITIZEN_API_USERNAME=
+CITIZEN_API_PASSWORD=
+CITIZEN_API_FOSA_ID=0022
+CITIZEN_API_CONNECT_TIMEOUT_MS=3000
+CITIZEN_API_RESPONSE_TIMEOUT_MS=10000
+CITIZEN_API_MAX_RETRIES=2
+CITIZEN_CACHE_TTL_SECONDS=300
+CITIZEN_CIRCUIT_FAILURE_THRESHOLD=5
+CITIZEN_CIRCUIT_RESET_TIMEOUT_MS=30000
 ```
 
 Future variables must be added to `.env.example` in the same change that adds
@@ -42,6 +54,12 @@ their runtime validation.
 - The AES-256-GCM encryption key decodes to exactly 32 bytes.
 - Encryption, identity lookup, token digest, and request-context keys must be
   different.
+- Production Redis URLs use `rediss://`; query and fragment data are rejected.
+- The citizen-provider URL cannot contain credentials, a query, or a fragment.
+- Production citizen-provider traffic requires HTTPS. Plain HTTP is accepted
+  only for a provider bound to localhost in development or tests.
+- Citizen-provider timeouts, retry count, cache TTL, circuit threshold, and
+  reset interval are bounded at startup.
 
 The port is deliberately absent because the service always uses port `3000`.
 
@@ -96,6 +114,20 @@ npm run start:dev
 ```
 
 `DATABASE_MIGRATION_URL` is forbidden in this service.
+
+## Citizen Provider Operations
+
+The Phase 3 citizen adapter is private and creates no public route. Redis is a
+performance dependency for encrypted positive caching; a cache outage falls
+back to the provider. Provider availability is controlled with response
+timeouts, bounded retries, and a circuit breaker.
+
+Use a dedicated least-privilege Redis credential and provider credential in
+production. Rotate either through the deployment secret platform. Never place
+credentials in `CITIZEN_API_URL`, logs, documentation, or support messages.
+
+See [Citizen provider integration](citizen-provider-integration.md) for the
+request, caching, failure, and testing contracts.
 
 ## Security Benchmark
 
