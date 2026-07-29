@@ -40,6 +40,21 @@ CITIZEN_LOOKUP_CLIENT_LIMIT_PER_MINUTE=5
 CITIZEN_LOOKUP_NID_LIMIT_PER_MINUTE=3
 REGISTRATION_CHALLENGE_TTL_SECONDS=600
 REGISTRATION_CHALLENGE_MAX_ATTEMPTS=3
+PASSWORD_ARGON2_MEMORY_KIB=65536
+PASSWORD_ARGON2_TIME_COST=3
+PASSWORD_ARGON2_PARALLELISM=1
+PASSWORD_HASH_MAX_CONCURRENCY=4
+EMAIL_TOKEN_TTL_SECONDS=86400
+REGISTRATION_LIMIT_PER_HOUR=3
+EMAIL_RESEND_LIMIT_PER_HOUR=3
+MAIL_OUTBOX_WORKER_ENABLED=false
+MAIL_PROVIDER_URL=
+MAIL_FROM=
+MAIL_API_KEY=
+MUCYORA_USER_APP_URL=http://localhost:4000
+MAIL_PROVIDER_TIMEOUT_MS=5000
+OUTBOX_POLL_INTERVAL_MS=5000
+OUTBOX_BATCH_SIZE=20
 ```
 
 Future variables must be added to `.env.example` in the same change that adds
@@ -67,6 +82,11 @@ their runtime validation.
   reset interval are bounded at startup.
 - Citizen lookup limits are positive integers bounded to 100 per minute.
 - Registration challenges expire within 2–15 minutes and allow 1–10 attempts.
+- Argon2id memory, time, parallelism, and concurrent hashing are bounded.
+- Email verification lifetime is bounded between 15 minutes and 48 hours.
+- Registration and resend hourly limits are bounded to 1–20.
+- Enabling the mail worker requires a fixed provider URL, sender address, and
+  an API key of at least 16 characters. Production mail requires HTTPS.
 
 The port is deliberately absent because the service always uses port `3000`.
 
@@ -139,6 +159,11 @@ request, caching, failure, and testing contracts.
 The public Phase 4 route uses Redis as a mandatory distributed abuse-control
 dependency and fails closed when rate-limit state is unavailable. See
 [Citizen lookup and registration challenges](registration-challenges.md).
+
+The mail worker is disabled by default. Enable it only after configuring the
+approved provider and Redis. It polls bounded unpublished batches and records
+safe failure codes. See
+[Registration and email verification](registration-and-email-verification.md).
 
 ## Security Benchmark
 
