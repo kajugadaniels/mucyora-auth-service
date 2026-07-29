@@ -58,6 +58,7 @@ MUCYORA_USER_APP_URL=http://localhost:4000
 MAIL_PROVIDER_TIMEOUT_MS=5000
 OUTBOX_POLL_INTERVAL_MS=5000
 OUTBOX_BATCH_SIZE=20
+OUTBOX_DELIVERY_CONCURRENCY=4
 OUTBOX_MAX_ATTEMPTS=10
 OUTBOX_LEASE_SECONDS=120
 OUTBOX_RETRY_BASE_SECONDS=30
@@ -258,3 +259,16 @@ npm run benchmark:security
 
 It measures versioned HMAC lookup and AES-256-GCM encrypt/decrypt operations.
 It does not access the database, NIDA, production keys, or real identifiers.
+
+## Phase 12 Performance Validation
+
+```bash
+npm run benchmark:auth
+npm run soak:local
+npm run load:validate
+```
+
+Use `npm run benchmark:query-plans` only with an approved disposable database
+branch. See [Performance validation](performance-validation.md) for measured
+results, k6 execution, SLOs, capacity assumptions, and unresolved staging
+evidence.
