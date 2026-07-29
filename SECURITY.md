@@ -179,6 +179,16 @@ one-time state transition; replay and cross-purpose use fail closed.
 Step-up completion never upgrades permanent identity state. Recent-proof reuse
 is deliberately disabled until a reviewed policy defines when it is safe.
 
+Phase 11 jobs use Redis leader leases and bounded indexed database batches.
+Outbox events additionally use database processing leases, exponential
+backoff, explicit dead-letter state, and stable provider idempotency keys.
+Errors persist and log only stable codes.
+
+Media and security-event deletion excludes active legal holds. Manual-review
+verification media is not automatically deleted. Orphaned object-storage
+reconciliation is paginated, waits through a configurable grace period, and
+deletes only objects whose keyed reference digest has no database record.
+
 ## Database Safety
 
 Auth imports database behavior only from `@mucyora/db`. This repository must
