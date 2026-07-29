@@ -70,6 +70,31 @@ const environmentSchema = Joi.object({
     .min(1_000)
     .max(300_000)
     .default(30_000),
+  CITIZEN_LOOKUP_IP_LIMIT_PER_MINUTE: Joi.number()
+    .integer()
+    .min(1)
+    .max(100)
+    .default(5),
+  CITIZEN_LOOKUP_CLIENT_LIMIT_PER_MINUTE: Joi.number()
+    .integer()
+    .min(1)
+    .max(100)
+    .default(5),
+  CITIZEN_LOOKUP_NID_LIMIT_PER_MINUTE: Joi.number()
+    .integer()
+    .min(1)
+    .max(100)
+    .default(3),
+  REGISTRATION_CHALLENGE_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(120)
+    .max(900)
+    .default(600),
+  REGISTRATION_CHALLENGE_MAX_ATTEMPTS: Joi.number()
+    .integer()
+    .min(1)
+    .max(10)
+    .default(3),
 }).unknown(true);
 
 export interface AuthEnvironment {
@@ -100,6 +125,11 @@ export interface AuthEnvironment {
   CITIZEN_CACHE_TTL_SECONDS: number;
   CITIZEN_CIRCUIT_FAILURE_THRESHOLD: number;
   CITIZEN_CIRCUIT_RESET_TIMEOUT_MS: number;
+  CITIZEN_LOOKUP_IP_LIMIT_PER_MINUTE: number;
+  CITIZEN_LOOKUP_CLIENT_LIMIT_PER_MINUTE: number;
+  CITIZEN_LOOKUP_NID_LIMIT_PER_MINUTE: number;
+  REGISTRATION_CHALLENGE_TTL_SECONDS: number;
+  REGISTRATION_CHALLENGE_MAX_ATTEMPTS: number;
 }
 
 export function validateEnvironment(
