@@ -16,6 +16,13 @@ READINESS_CACHE_TTL_MS=5000
 ENABLE_SWAGGER=false
 DOCS_BASIC_AUTH_USER=
 DOCS_BASIC_AUTH_PASS=
+IDENTITY_ENCRYPTION_PROVIDER=SOFTWARE_GCM
+IDENTITY_ENCRYPTION_KEY_VERSION=v1
+IDENTITY_ENCRYPTION_SECRET=
+IDENTITY_LOOKUP_KEY_VERSION=v1
+IDENTITY_LOOKUP_HMAC_KEY=
+TOKEN_DIGEST_HMAC_KEY=
+REQUEST_CONTEXT_HMAC_KEY=
 ```
 
 Future variables must be added to `.env.example` in the same change that adds
@@ -31,6 +38,10 @@ their runtime validation.
 - Production Swagger requires a username and a documentation password of at
   least 16 characters.
 - Readiness cache TTL is bounded between 250 ms and 30 seconds.
+- Security keys are base64url-encoded and decode to at least 32 bytes.
+- The AES-256-GCM encryption key decodes to exactly 32 bytes.
+- Encryption, identity lookup, token digest, and request-context keys must be
+  different.
 
 The port is deliberately absent because the service always uses port `3000`.
 
@@ -85,3 +96,14 @@ npm run start:dev
 ```
 
 `DATABASE_MIGRATION_URL` is forbidden in this service.
+
+## Security Benchmark
+
+Run the synthetic local microbenchmark:
+
+```bash
+npm run benchmark:security
+```
+
+It measures versioned HMAC lookup and AES-256-GCM encrypt/decrypt operations.
+It does not access the database, NIDA, production keys, or real identifiers.
