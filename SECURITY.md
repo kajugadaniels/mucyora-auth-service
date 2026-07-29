@@ -63,6 +63,13 @@ identity providers without authorization, or publish an unpatched issue.
   purpose-bound AES-256-GCM encryption.
 - Provider responses are schema-validated and minimized before leaving the
   adapter.
+- Citizen lookup is limited independently by keyed IP, client-instance, and
+  NID dimensions in Redis.
+- Missing, ineligible, and registered identities use the same external denial.
+- Registration challenge tokens encrypt their database identifiers and expire
+  within a bounded short lifetime.
+- Challenge attempt and consumption operations use conditional database
+  updates; only one transaction can consume a pending challenge.
 
 ## Sensitive Data
 
@@ -84,6 +91,10 @@ phases must still use them correctly and atomically.
 Phase 3 uses those primitives for the private citizen-provider cache. It does
 not expose a citizen lookup endpoint, persist provider payloads, or create user
 records.
+
+Phase 4 exposes only registration initiation. It persists an encrypted,
+minimized challenge and never creates a user account. The normalized email is
+bound to the challenge, while the plaintext NID is neither stored nor returned.
 
 ## Database Safety
 
