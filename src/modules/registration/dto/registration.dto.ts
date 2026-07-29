@@ -13,6 +13,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ConsentType } from '@mucyora/db';
+import { RWANDA_OPENAPI_EXAMPLES } from '../../../common/openapi/auth-openapi';
 
 export class RegistrationConsentDto {
   @ApiProperty({ enum: ConsentType })
@@ -26,19 +27,26 @@ export class RegistrationConsentDto {
 }
 
 export class RegistrationDto {
-  @ApiProperty()
+  @ApiProperty({ example: RWANDA_OPENAPI_EXAMPLES.opaqueToken })
   @IsString()
   @MinLength(64)
   @MaxLength(2_048)
   registrationChallengeToken!: string;
 
-  @ApiProperty({ maxLength: 320 })
+  @ApiProperty({
+    maxLength: 320,
+    example: RWANDA_OPENAPI_EXAMPLES.email,
+  })
   @IsString()
   @IsEmail()
   @MaxLength(320)
   email!: string;
 
-  @ApiProperty({ minLength: 15, maxLength: 128 })
+  @ApiProperty({
+    minLength: 15,
+    maxLength: 128,
+    example: 'Umusozi!Kigali-2026',
+  })
   @IsString()
   @MinLength(15)
   @MaxLength(128)
@@ -54,16 +62,16 @@ export class RegistrationDto {
 }
 
 export class RegistrationResponseDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'USR-RW-7AC6E3C650D7' })
   userReference!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'al***@example.rw' })
   maskedEmail!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: true })
   emailVerificationRequired!: true;
 
-  @ApiProperty()
+  @ApiProperty({ example: true })
   identityVerificationRequired!: true;
 
   @ApiProperty({ enum: ['VERIFY_EMAIL'] })
