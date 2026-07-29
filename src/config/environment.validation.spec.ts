@@ -34,6 +34,12 @@ describe('environment validation', () => {
     MUCYORA_ENGINE_URL: 'http://localhost:8000',
     MUCYORA_ENGINE_SERVICE_KEY:
       'test-engine-service-key-at-least-thirty-two-bytes',
+    STEP_UP_POLICY_VERSION: 'step-up-2026-07',
+    MUCYORA_USER_SERVICE_KEY: 'test-user-service-key-at-least-thirty-two-bytes',
+    MUCYORA_SIGNATURE_SERVICE_KEY:
+      'test-signature-service-key-at-least-thirty-two',
+    MUCYORA_AUTH_RECOVERY_SERVICE_KEY:
+      'test-auth-recovery-key-at-least-thirty-two',
   };
 
   it('applies safe defaults', () => {
@@ -45,6 +51,8 @@ describe('environment validation', () => {
     expect(environment.REGISTRATION_CHALLENGE_TTL_SECONDS).toBe(600);
     expect(environment.REGISTRATION_CHALLENGE_MAX_ATTEMPTS).toBe(3);
     expect(environment.SESSION_UPGRADE_IDEMPOTENCY_TTL_SECONDS).toBe(900);
+    expect(environment.STEP_UP_CHALLENGE_TTL_SECONDS).toBe(600);
+    expect(environment.STEP_UP_ASSERTION_TTL_SECONDS).toBe(300);
   });
 
   it('rejects wildcard CORS origins', () => {
