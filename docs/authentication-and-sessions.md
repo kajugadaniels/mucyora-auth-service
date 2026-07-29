@@ -1,11 +1,11 @@
 # Authentication and Sessions
 
-## Phase 6 Scope
+## Implemented Scope
 
 Phase 6 implements login, limited/full session issuance, RS256 access tokens,
 opaque refresh rotation, refresh reuse detection, logout, session listing, and
-owned-session revocation. Identity-verification submission and
-limited-to-full session upgrade remain later phases.
+owned-session revocation. Phase 9 also implements atomic limited-to-full
+session replacement after successful account-enrollment verification.
 
 ## Login
 
@@ -99,3 +99,31 @@ DELETE /api/v1/auth/sessions/:sessionId
 Revocation updates the session and all associated refresh digests atomically.
 Session listing is bounded and returns only owned device/session metadata.
 Limited sessions cannot pass routes decorated as requiring a full session.
+
+## Limited-to-Full Upgrade
+
+```text
+POST /api/v1/auth/session/upgrade
+Authorization: Bearer <limited-access-token>
+Idempotency-Key: <16-128 safe characters>
+
+{
+  "verificationAttemptId": "<uuid>",
+  "transport": "COOKIE" | "NATIVE"
+}
+```
+
+The referenced attempt must belong to the authenticated user, have
+`ACCOUNT_ENROLLMENT` purpose, and be `PASSED`; the user identity state must
+also be `VERIFIED`. One serializable transaction then:
+
+1. claims the idempotency key for the limited session;
+2. conditionally revokes the active limited session;
+3. revokes every refresh token attached to it;
+4. creates a new full session and generation-zero refresh token;
+5. records the security event and encrypted replay result.
+
+The conditional revocation makes concurrent requests single-winner. Retrying
+the same request with the same key returns the original full-session result;
+changing the body while reusing the key is rejected. No NIDA, Engine, Redis,
+or other remote call occurs in the upgrade transaction.
