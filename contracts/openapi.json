@@ -1,0 +1,5847 @@
+{
+  "components": {
+    "schemas": {
+      "AuthTokenResponseDto": {
+        "properties": {
+          "accessToken": {
+            "example": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im11Y3lvcmEifQ...",
+            "type": "string"
+          },
+          "expiresIn": {
+            "example": 900,
+            "type": "number"
+          },
+          "identityVerified": {
+            "example": true,
+            "type": "boolean"
+          },
+          "refreshToken": {
+            "example": "RwandaSyntheticToken_000000000000000000000000000000000001",
+            "type": "string"
+          },
+          "sessionLevel": {
+            "enum": [
+              "LIMITED",
+              "FULL"
+            ],
+            "example": "FULL",
+            "type": "string"
+          }
+        },
+        "required": [
+          "accessToken",
+          "expiresIn",
+          "sessionLevel",
+          "identityVerified"
+        ],
+        "type": "object"
+      },
+      "ChangePasswordDto": {
+        "properties": {
+          "currentPassword": {
+            "example": "Umusozi!Kigali-2026",
+            "type": "string"
+          },
+          "newPassword": {
+            "example": "Imisozi!Rwanda-2026",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object"
+      },
+      "CitizenLookupDto": {
+        "properties": {
+          "email": {
+            "description": "Email address bound to the registration challenge",
+            "example": "aline.uwase@example.rw",
+            "maxLength": 320,
+            "type": "string"
+          },
+          "nid": {
+            "description": "Rwanda National ID as a string; spaces and hyphens are normalized",
+            "example": "1199980012345678",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nid",
+          "email"
+        ],
+        "type": "object"
+      },
+      "CitizenLookupResponseDto": {
+        "properties": {
+          "citizen": {
+            "$ref": "#/components/schemas/CitizenPreviewDto"
+          },
+          "expiresAt": {
+            "example": "2026-07-30T10:10:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "registrationChallengeToken": {
+            "description": "Opaque, short-lived token required by the registration submission",
+            "example": "RwandaSyntheticToken_000000000000000000000000000000000001",
+            "type": "string"
+          }
+        },
+        "required": [
+          "registrationChallengeToken",
+          "expiresAt",
+          "citizen"
+        ],
+        "type": "object"
+      },
+      "CitizenPreviewDto": {
+        "properties": {
+          "dateOfBirth": {
+            "example": "1999-08-01",
+            "format": "date",
+            "type": "string"
+          },
+          "givenNames": {
+            "example": "Aline",
+            "type": "string"
+          },
+          "nationality": {
+            "example": "Rwandan",
+            "type": "string"
+          },
+          "sex": {
+            "example": "F",
+            "type": "string"
+          },
+          "surname": {
+            "example": "Uwase",
+            "type": "string"
+          }
+        },
+        "required": [
+          "surname",
+          "givenNames",
+          "dateOfBirth",
+          "nationality",
+          "sex"
+        ],
+        "type": "object"
+      },
+      "ConfirmUploadDto": {
+        "properties": {
+          "checksum": {
+            "description": "Base64 SHA-256 checksum",
+            "example": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+            "type": "string"
+          },
+          "contentType": {
+            "enum": [
+              "image/jpeg",
+              "image/png"
+            ],
+            "type": "string"
+          },
+          "height": {
+            "example": 1600,
+            "type": "number"
+          },
+          "mediaType": {
+            "enum": [
+              "ID_DOCUMENT"
+            ],
+            "type": "string"
+          },
+          "objectKey": {
+            "example": "identity-verification/2026/07/e9b5dc65-6fe8-4b0d-9b65-56ca8560da44/id-document.png",
+            "type": "string"
+          },
+          "width": {
+            "example": 1200,
+            "type": "number"
+          }
+        },
+        "required": [
+          "mediaType",
+          "contentType",
+          "checksum",
+          "width",
+          "height",
+          "objectKey"
+        ],
+        "type": "object"
+      },
+      "ConsumeStepUpAssertionDto": {
+        "properties": {
+          "assertion": {
+            "example": "RwandaSyntheticToken_000000000000000000000000000000000001",
+            "type": "string"
+          },
+          "purpose": {
+            "enum": [
+              "DEVICE_TRANSFER",
+              "AGREEMENT_SIGNING",
+              "ACCOUNT_RECOVERY"
+            ],
+            "example": "DEVICE_TRANSFER",
+            "type": "string"
+          },
+          "targetResourceId": {
+            "description": "Opaque identifier of the protected target resource",
+            "example": "device-transfer-kigali-0001",
+            "type": "string"
+          },
+          "userId": {
+            "example": "7ac6e3c6-50d7-4c42-87fd-c5be13f20ad2",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "targetResourceId",
+          "userId",
+          "assertion"
+        ],
+        "type": "object"
+      },
+      "CreateStepUpChallengeDto": {
+        "properties": {
+          "purpose": {
+            "enum": [
+              "DEVICE_TRANSFER",
+              "AGREEMENT_SIGNING",
+              "ACCOUNT_RECOVERY"
+            ],
+            "example": "DEVICE_TRANSFER",
+            "type": "string"
+          },
+          "targetResourceId": {
+            "description": "Opaque identifier of the protected target resource",
+            "example": "device-transfer-kigali-0001",
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "targetResourceId"
+        ],
+        "type": "object"
+      },
+      "CreateUploadPolicyDto": {
+        "properties": {
+          "checksum": {
+            "description": "Base64 SHA-256 checksum",
+            "example": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+            "type": "string"
+          },
+          "contentType": {
+            "enum": [
+              "image/jpeg",
+              "image/png"
+            ],
+            "type": "string"
+          },
+          "height": {
+            "example": 1600,
+            "type": "number"
+          },
+          "mediaType": {
+            "enum": [
+              "ID_DOCUMENT"
+            ],
+            "type": "string"
+          },
+          "width": {
+            "example": 1200,
+            "type": "number"
+          }
+        },
+        "required": [
+          "mediaType",
+          "contentType",
+          "checksum",
+          "width",
+          "height"
+        ],
+        "type": "object"
+      },
+      "ForgotPasswordDto": {
+        "properties": {
+          "email": {
+            "example": "aline.uwase@example.rw",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "LoginDto": {
+        "properties": {
+          "deviceId": {
+            "example": "android-kigali-0001",
+            "type": "string"
+          },
+          "deviceLabel": {
+            "example": "Aline Pixel – Kigali",
+            "type": "string"
+          },
+          "email": {
+            "example": "aline.uwase@example.rw",
+            "type": "string"
+          },
+          "password": {
+            "description": "Example only; never reuse documentation passwords.",
+            "example": "Umusozi!Kigali-2026",
+            "type": "string"
+          },
+          "transport": {
+            "enum": [
+              "COOKIE",
+              "NATIVE"
+            ],
+            "example": "NATIVE",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "deviceId",
+          "transport"
+        ],
+        "type": "object"
+      },
+      "PasswordChangedDto": {
+        "properties": {
+          "status": {
+            "example": "changed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
+      "PasswordRequestAcceptedDto": {
+        "properties": {
+          "status": {
+            "example": "accepted",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
+      "RefreshDto": {
+        "properties": {
+          "refreshToken": {
+            "example": "RwandaSyntheticToken_000000000000000000000000000000000001",
+            "type": "string"
+          },
+          "transport": {
+            "enum": [
+              "COOKIE",
+              "NATIVE"
+            ],
+            "example": "NATIVE",
+            "type": "string"
+          }
+        },
+        "required": [
+          "transport"
+        ],
+        "type": "object"
+      },
+      "RegistrationConsentDto": {
+        "properties": {
+          "policyVersion": {
+            "example": "2026-07-01",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "IDENTITY_DATA_PROCESSING",
+              "BIOMETRIC_PROCESSING",
+              "TERMS_OF_SERVICE",
+              "PRIVACY_POLICY"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "policyVersion"
+        ],
+        "type": "object"
+      },
+      "RegistrationDto": {
+        "properties": {
+          "consents": {
+            "items": {
+              "$ref": "#/components/schemas/RegistrationConsentDto"
+            },
+            "type": "array"
+          },
+          "email": {
+            "example": "aline.uwase@example.rw",
+            "maxLength": 320,
+            "type": "string"
+          },
+          "password": {
+            "example": "Umusozi!Kigali-2026",
+            "maxLength": 128,
+            "minLength": 15,
+            "type": "string"
+          },
+          "registrationChallengeToken": {
+            "example": "RwandaSyntheticToken_000000000000000000000000000000000001",
+            "type": "string"
+          }
+        },
+        "required": [
+          "registrationChallengeToken",
+          "email",
+          "password",
+          "consents"
+        ],
+        "type": "object"
+      },
+      "RegistrationResponseDto": {
+        "properties": {
+          "emailVerificationRequired": {
+            "example": true,
+            "type": "boolean"
+          },
+          "identityVerificationRequired": {
+            "example": true,
+            "type": "boolean"
+          },
+          "maskedEmail": {
+            "example": "al***@example.rw",
+            "type": "string"
+          },
+          "nextAction": {
+            "enum": [
+              "VERIFY_EMAIL"
+            ],
+            "type": "string"
+          },
+          "userReference": {
+            "example": "USR-RW-7AC6E3C650D7",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userReference",
+          "maskedEmail",
+          "emailVerificationRequired",
+          "identityVerificationRequired",
+          "nextAction"
+        ],
+        "type": "object"
+      },
+      "ResendEmailVerificationDto": {
+        "properties": {
+          "email": {
+            "example": "aline.uwase@example.rw",
+            "maxLength": 320,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "ResendEmailVerificationResponseDto": {
+        "properties": {
+          "status": {
+            "enum": [
+              "accepted"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
+      "ResetPasswordDto": {
+        "properties": {
+          "newPassword": {
+            "example": "Imisozi!Rwanda-2026",
+            "type": "string"
+          },
+          "token": {
+            "example": "RwandaSyntheticToken_000000000000000000000000000000000001",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ],
+        "type": "object"
+      },
+      "SessionUpgradeDto": {
+        "properties": {
+          "transport": {
+            "enum": [
+              "COOKIE",
+              "NATIVE"
+            ],
+            "example": "NATIVE",
+            "type": "string"
+          },
+          "verificationAttemptId": {
+            "example": "e9b5dc65-6fe8-4b0d-9b65-56ca8560da44",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "verificationAttemptId",
+          "transport"
+        ],
+        "type": "object"
+      },
+      "VerificationAttemptResponseDto": {
+        "properties": {
+          "attemptNumber": {
+            "example": 1,
+            "type": "number"
+          },
+          "id": {
+            "example": "e9b5dc65-6fe8-4b0d-9b65-56ca8560da44",
+            "format": "uuid",
+            "type": "string"
+          },
+          "policyVersion": {
+            "example": "2026-07-01",
+            "type": "string"
+          },
+          "reasonCode": {
+            "type": "object"
+          },
+          "retryAfter": {
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "MEDIA_PENDING",
+              "PROCESSING",
+              "PASSED",
+              "FAILED",
+              "RETRY_REQUIRED",
+              "REVIEW_REQUIRED",
+              "PROVIDER_UNAVAILABLE",
+              "EXPIRED"
+            ],
+            "example": "PENDING",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "attemptNumber",
+          "policyVersion"
+        ],
+        "type": "object"
+      },
+      "VerifyEmailDto": {
+        "properties": {
+          "token": {
+            "example": "RwandaSyntheticToken_000000000000000000000000000000000001",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
+      "VerifyEmailResponseDto": {
+        "properties": {
+          "nextAction": {
+            "enum": [
+              "IDENTITY_VERIFICATION"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "verified"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "nextAction"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "csrf": {
+        "description": "Double-submit CSRF value required with cookie refresh transport.",
+        "in": "header",
+        "name": "x-csrf-token",
+        "type": "apiKey"
+      },
+      "internalServiceKey": {
+        "description": "Purpose-separated internal service credential.",
+        "in": "header",
+        "name": "x-mucyora-service-key",
+        "type": "apiKey"
+      },
+      "internalServiceName": {
+        "description": "Approved internal MUCYORA service identity.",
+        "in": "header",
+        "name": "x-mucyora-service-name",
+        "type": "apiKey"
+      },
+      "refreshCookie": {
+        "description": "HttpOnly browser refresh-token cookie.",
+        "in": "cookie",
+        "name": "mucyora_refresh",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "contact": {},
+    "description": "Versioned authentication and identity-verification API. All people and identifiers in examples are fictional Rwandan test data.",
+    "title": "MUCYORA Auth Service",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/.well-known/jwks.json": {
+      "get": {
+        "deprecated": false,
+        "operationId": "Jwks_getKeys",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Return public access-token verification keys",
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Auth_login",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokenResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Authenticate and create a limited or full session",
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Sessions_logout",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke the current session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/auth/logout-all": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Sessions_logoutAll",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke every active session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/auth/password/change": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Password_change",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordChangedDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change a password using the current password",
+        "tags": [
+          "password"
+        ]
+      }
+    },
+    "/api/v1/auth/password/forgot": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Password_forgot",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordRequestAcceptedDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Request a generic password recovery email",
+        "tags": [
+          "password"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Password_reset",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordChangedDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Consume a password recovery token",
+        "tags": [
+          "password"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Auth_refresh",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokenResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {},
+          {
+            "csrf": [],
+            "refreshCookie": []
+          }
+        ],
+        "summary": "Rotate a refresh token and issue new credentials",
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/session/upgrade": {
+      "post": {
+        "deprecated": false,
+        "operationId": "SessionUpgrade_upgrade",
+        "parameters": [
+          {
+            "description": "Stable retry key for one session-upgrade request.",
+            "in": "header",
+            "name": "idempotency-key",
+            "required": true,
+            "schema": {
+              "example": "session-upgrade-kigali-0001",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionUpgradeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokenResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a limited session with a full session",
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "deprecated": false,
+        "operationId": "Sessions_list",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List active sessions",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/{sessionId}": {
+      "delete": {
+        "deprecated": false,
+        "operationId": "Sessions_revoke",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke one owned session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/v1/identity-verification/attempts": {
+      "post": {
+        "deprecated": false,
+        "operationId": "IdentityVerification_createAttempt",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationAttemptResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create an account-enrollment attempt",
+        "tags": [
+          "identity-verification"
+        ]
+      }
+    },
+    "/api/v1/identity-verification/attempts/{attemptId}": {
+      "get": {
+        "deprecated": false,
+        "operationId": "IdentityVerification_attempt",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationAttemptResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one owned verification attempt",
+        "tags": [
+          "identity-verification"
+        ]
+      }
+    },
+    "/api/v1/identity-verification/attempts/{attemptId}/liveness-session": {
+      "post": {
+        "deprecated": false,
+        "operationId": "IdentityVerification_createLivenessSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a provider-backed liveness session",
+        "tags": [
+          "identity-verification"
+        ]
+      }
+    },
+    "/api/v1/identity-verification/attempts/{attemptId}/media/confirm": {
+      "post": {
+        "deprecated": false,
+        "operationId": "IdentityVerification_confirmUpload",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmUploadDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Confirm uploaded verification media metadata",
+        "tags": [
+          "identity-verification"
+        ]
+      }
+    },
+    "/api/v1/identity-verification/attempts/{attemptId}/submit": {
+      "post": {
+        "deprecated": false,
+        "operationId": "IdentityVerification_submit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerificationAttemptResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit a completed attempt to MUCYORA Engine",
+        "tags": [
+          "identity-verification"
+        ]
+      }
+    },
+    "/api/v1/identity-verification/attempts/{attemptId}/upload-policy": {
+      "post": {
+        "deprecated": false,
+        "operationId": "IdentityVerification_createUploadPolicy",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUploadPolicyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a private attempt-bound upload policy",
+        "tags": [
+          "identity-verification"
+        ]
+      }
+    },
+    "/api/v1/identity-verification/status": {
+      "get": {
+        "deprecated": false,
+        "operationId": "IdentityVerification_status",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get account identity-verification status",
+        "tags": [
+          "identity-verification"
+        ]
+      }
+    },
+    "/api/v1/internal/operations/jobs": {
+      "get": {
+        "deprecated": false,
+        "operationId": "Operations_status",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "internalServiceKey": [],
+            "internalServiceName": []
+          }
+        ],
+        "summary": "Read minimized operational job health",
+        "tags": [
+          "internal-operations"
+        ]
+      }
+    },
+    "/api/v1/internal/step-up/assertions/consume": {
+      "post": {
+        "deprecated": false,
+        "operationId": "InternalStepUp_consume",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsumeStepUpAssertionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "internalServiceKey": [],
+            "internalServiceName": []
+          }
+        ],
+        "summary": "Consume one purpose- and target-bound assertion",
+        "tags": [
+          "internal-step-up-verification"
+        ]
+      }
+    },
+    "/api/v1/registration": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Registration_register",
+        "parameters": [
+          {
+            "description": "Unique key for safely replaying this registration request",
+            "in": "header",
+            "name": "idempotency-key",
+            "required": true,
+            "schema": {
+              "example": "registration-kigali-20260730-0001",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrationResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Create an account from a registration challenge",
+        "tags": [
+          "registration"
+        ]
+      }
+    },
+    "/api/v1/registration/citizen/lookup": {
+      "post": {
+        "deprecated": false,
+        "operationId": "Registration_initiateCitizenLookup",
+        "parameters": [
+          {
+            "description": "Stable non-secret client instance identifier",
+            "in": "header",
+            "name": "x-client-instance-id",
+            "required": true,
+            "schema": {
+              "example": "android-kigali-0001",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CitizenLookupDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitizenLookupResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid lookup request"
+          },
+          "429": {
+            "description": "Lookup rate limit exceeded"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Create a short-lived citizen registration challenge",
+        "tags": [
+          "registration"
+        ]
+      }
+    },
+    "/api/v1/registration/email/resend": {
+      "post": {
+        "deprecated": false,
+        "operationId": "EmailVerification_resend",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendEmailVerificationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResendEmailVerificationResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Request another email verification message",
+        "tags": [
+          "registration"
+        ]
+      }
+    },
+    "/api/v1/registration/email/verify": {
+      "post": {
+        "deprecated": false,
+        "operationId": "EmailVerification_verify",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyEmailResponseDto"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Consume a single-use email verification token",
+        "tags": [
+          "registration"
+        ]
+      }
+    },
+    "/api/v1/step-up/challenges": {
+      "post": {
+        "deprecated": false,
+        "operationId": "StepUpVerification_create",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStepUpChallengeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a target-bound fresh-verification challenge",
+        "tags": [
+          "step-up-verification"
+        ]
+      }
+    },
+    "/api/v1/step-up/challenges/{challengeId}": {
+      "get": {
+        "deprecated": false,
+        "operationId": "StepUpVerification_challenge",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "challengeId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read an owned step-up challenge",
+        "tags": [
+          "step-up-verification"
+        ]
+      }
+    },
+    "/api/v1/step-up/challenges/{challengeId}/assertion": {
+      "post": {
+        "deprecated": false,
+        "operationId": "StepUpVerification_assertion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "challengeId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "description": "Endpoint response. Typed DTO schemas are used where the response is not provider-generated.",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Issue the assertion after fresh verification passes",
+        "tags": [
+          "step-up-verification"
+        ]
+      }
+    },
+    "/health/live": {
+      "get": {
+        "deprecated": false,
+        "operationId": "Health_live",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "service": "mucyora-auth",
+                    "status": "ok",
+                    "timestamp": "2026-07-30T10:00:00.000Z"
+                  }
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A required dependency is temporarily unavailable."
+          }
+        },
+        "summary": "Check process liveness without dependency calls",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "deprecated": false,
+        "operationId": "Health_ready",
+        "parameters": [
+          {
+            "description": "Optional validated correlation ID returned on the response.",
+            "in": "header",
+            "name": "x-correlation-id",
+            "required": false,
+            "schema": {
+              "example": "kigali-mobile-20260730-0001",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "checks": {
+                      "database": "up"
+                    },
+                    "service": "mucyora-auth",
+                    "status": "ok",
+                    "timestamp": "2026-07-30T10:00:00.000Z"
+                  }
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "x-correlation-id": {
+                "description": "Validated or generated request correlation ID.",
+                "schema": {
+                  "example": "kigali-mobile-20260730-0001",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Request validation failed."
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "A security rate limit was enforced."
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "code": {
+                      "example": "REQUEST_INVALID",
+                      "type": "string"
+                    },
+                    "correlationId": {
+                      "example": "kigali-mobile-20260730-0001",
+                      "type": "string"
+                    },
+                    "message": {
+                      "example": "The request could not be completed.",
+                      "type": "string"
+                    },
+                    "statusCode": {
+                      "example": 400,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Unexpected failure with a minimized response."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "checks": {
+                      "database": "down"
+                    },
+                    "service": "mucyora-auth",
+                    "status": "unavailable",
+                    "timestamp": "2026-07-30T10:00:00.000Z"
+                  }
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Check database-backed traffic readiness",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": "Version 1 public and internal API",
+      "url": "/api/v1"
+    }
+  ],
+  "tags": []
+}
