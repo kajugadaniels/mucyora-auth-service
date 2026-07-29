@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 9 of the implementation plan is complete. In addition to the secure
+Phase 10 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -73,6 +73,10 @@ service foundation, Auth now provides:
 - verification-attempt ownership and enrollment-purpose enforcement;
 - limited-family refresh revocation before full credential issuance;
 - cookie and native upgrade transports with encrypted replay results.
+- fresh `DEVICE_TRANSFER`, `AGREEMENT_SIGNING`, and `ACCOUNT_RECOVERY` proof;
+- HMAC target-bound, purpose-specific step-up challenges;
+- short-lived, encrypted, one-time internal assertions;
+- dedicated service authentication for User, Signature, and Auth Recovery.
 
 ## Service Boundary
 
@@ -130,6 +134,10 @@ environment variables.
 | `POST`   | `/api/v1/identity-verification/attempts/:attemptId/submit`           | Submit verification                                  |
 | `GET`    | `/api/v1/identity-verification/status`                               | Read identity status                                 |
 | `GET`    | `/api/v1/identity-verification/attempts/:attemptId`                  | Read owned attempt                                   |
+| `POST`   | `/api/v1/step-up/challenges`                                         | Create a target-bound fresh-verification challenge   |
+| `GET`    | `/api/v1/step-up/challenges/:challengeId`                            | Read an owned step-up challenge                      |
+| `POST`   | `/api/v1/step-up/challenges/:challengeId/assertion`                  | Issue an assertion after the linked attempt passes   |
+| `POST`   | `/api/v1/internal/step-up/assertions/consume`                        | Atomically consume an authorized internal assertion  |
 | `GET`    | `/.well-known/jwks.json`                                             | Return public access-token verification keys         |
 
 Later application APIs will be mounted below `/api/v1` in their separately
@@ -189,6 +197,10 @@ The shared Prisma client must already be generated and built in `api/db`.
 Session-upgrade idempotency records expire after a short configurable window;
 their credential result is encrypted with purpose-bound AES-GCM.
 
+Step-up assertions are purpose- and target-bound, have a maximum five-minute
+default lifetime, and are consumed through a conditional single-row update.
+Internal services use separate purpose-specific service credentials.
+
 ## Container Build
 
 The image needs both sibling projects because Auth consumes the local
@@ -210,5 +222,5 @@ documentation rules.
 ## Production Readiness
 
 The service is not yet a production-ready authentication product. Later phases
-must still implement step-up verification, operational cleanup, load testing,
-and release security gates.
+must still implement operational jobs, load testing, and release security
+gates.
