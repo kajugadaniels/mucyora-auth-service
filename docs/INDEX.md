@@ -9,6 +9,13 @@ This directory is the operational and engineering reference for `api/auth`.
 3. [Database access](database-access.md)
 4. [Security](security.md)
 5. [Development rules](development-rules.md)
+6. [Git rules](git.md)
+
+## Implementation Planning
+
+- [Current-state audit](current-state-audit.md)
+- [Reference parity matrix](reference-parity-matrix.md)
+- [Authentication database change proposal](database-change-proposal.md)
 
 ## Documentation Rules
 
