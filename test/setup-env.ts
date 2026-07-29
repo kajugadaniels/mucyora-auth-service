@@ -71,5 +71,12 @@ process.env.VERIFICATION_CLEANUP_INTERVAL_MS = '300000';
 process.env.MUCYORA_ENGINE_URL = 'http://localhost:8000';
 process.env.MUCYORA_ENGINE_SERVICE_KEY =
   'test-engine-service-key-at-least-thirty-two-bytes';
+process.env.STEP_UP_POLICY_VERSION = 'step-up-2026-07';
+process.env.MUCYORA_USER_SERVICE_KEY =
+  'test-user-service-key-at-least-thirty-two-bytes';
+process.env.MUCYORA_SIGNATURE_SERVICE_KEY =
+  'test-signature-service-key-at-least-thirty-two';
+process.env.MUCYORA_AUTH_RECOVERY_SERVICE_KEY =
+  'test-auth-recovery-key-at-least-thirty-two';
 process.env.MUCYORA_ENGINE_TIMEOUT_MS = '45000';
 process.env.MUCYORA_ENGINE_MAX_CONCURRENCY = '4';
