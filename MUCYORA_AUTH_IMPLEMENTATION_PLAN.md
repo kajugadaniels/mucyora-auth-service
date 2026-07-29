@@ -2,7 +2,7 @@
 ## Security-First, High-Performance Implementation Specification
 
 **Target project:** `mucyora/api/auth`  
-**Reference implementation:** `https://github.com/kajugadaniels/gracon-user-auth-service`  
+**Reference implementation:** prior MUCYORA authentication service  
 **Primary external identity source:** NIDA through `CITIZEN_API_URL`  
 **Biometric verification component:** `mucyora/engine`  
 **Shared database package:** `@mucyora/db` from `../db`  
@@ -16,7 +16,7 @@
 # 1. Purpose
 
 This document defines how to build the MUCYORA authentication and identity-verification service
-using the proven behavior of `gracon-user-auth-service`, while adapting it to the MUCYORA
+using the proven behavior of the prior MUCYORA authentication service, while adapting it to the MUCYORA
 architecture and strengthening security, privacy, reliability, and performance.
 
 The implementation must preserve the important workflows from the reference project:
@@ -41,7 +41,7 @@ The implementation must preserve the important workflows from the reference proj
 
 This is **functional parity with deliberate hardening**, not a blind copy of the old source code.
 
-The MUCYORA service must retain the useful workflows while removing legacy Gracon assumptions,
+The MUCYORA service must retain useful workflows while removing legacy implementation assumptions,
 obsolete service dependencies, insecure cryptographic choices, and responsibilities that belong
 to other MUCYORA services.
 
@@ -1747,7 +1747,7 @@ gap report without implementing business functionality.
 ### Tasks
 
 - inspect `mucyora/api/auth`;
-- inspect `gracon-user-auth-service`;
+- inspect the prior MUCYORA authentication service;
 - inspect `@mucyora/db` exports and schema;
 - inventory reference modules, endpoints, DTOs, guards, integrations, tests, and configuration;
 - map reference features to MUCYORA boundaries;
@@ -2720,8 +2720,7 @@ Do not start another phase.
 
 ## Project reference
 
-- Gracon User Auth Service:  
-  `https://github.com/kajugadaniels/gracon-user-auth-service`
+- Prior MUCYORA Authentication Service
 
 ## MUCYORA related components
 
