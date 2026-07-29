@@ -8,16 +8,21 @@ import { AuthRateLimiter } from './auth-rate-limiter.service';
 import { AuthenticationService } from './authentication.service';
 import { JwksController } from './jwks.controller';
 import { SessionLevelGuard } from './session-level.guard';
+import { SessionUpgradeController } from './session-upgrade.controller';
+import { SessionUpgradeGuard } from './session-upgrade.guard';
+import { SessionUpgradeService } from './session-upgrade.service';
 
 @Module({
   imports: [IntegrationsModule, SecurityEventsModule],
-  controllers: [AuthController, JwksController],
+  controllers: [AuthController, SessionUpgradeController, JwksController],
   providers: [
     AccessTokenService,
     AccessAuthGuard,
     SessionLevelGuard,
+    SessionUpgradeGuard,
     AuthRateLimiter,
     AuthenticationService,
+    SessionUpgradeService,
   ],
   exports: [AccessTokenService, AccessAuthGuard, SessionLevelGuard],
 })
