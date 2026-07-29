@@ -19,6 +19,19 @@ const environmentSchema = Joi.object({
     .min(250)
     .max(30_000)
     .default(5_000),
+  IDENTITY_ENCRYPTION_PROVIDER: Joi.string()
+    .valid('SOFTWARE_GCM')
+    .default('SOFTWARE_GCM'),
+  IDENTITY_ENCRYPTION_KEY_VERSION: Joi.string()
+    .pattern(/^v[1-9]\d*$/)
+    .required(),
+  IDENTITY_ENCRYPTION_SECRET: Joi.string().min(43).required(),
+  IDENTITY_LOOKUP_KEY_VERSION: Joi.string()
+    .pattern(/^v[1-9]\d*$/)
+    .required(),
+  IDENTITY_LOOKUP_HMAC_KEY: Joi.string().min(43).required(),
+  TOKEN_DIGEST_HMAC_KEY: Joi.string().min(43).required(),
+  REQUEST_CONTEXT_HMAC_KEY: Joi.string().min(43).required(),
 }).unknown(true);
 
 export interface AuthEnvironment {
@@ -30,6 +43,13 @@ export interface AuthEnvironment {
   DOCS_BASIC_AUTH_USER: string;
   DOCS_BASIC_AUTH_PASS: string;
   READINESS_CACHE_TTL_MS: number;
+  IDENTITY_ENCRYPTION_PROVIDER: 'SOFTWARE_GCM';
+  IDENTITY_ENCRYPTION_KEY_VERSION: string;
+  IDENTITY_ENCRYPTION_SECRET: string;
+  IDENTITY_LOOKUP_KEY_VERSION: string;
+  IDENTITY_LOOKUP_HMAC_KEY: string;
+  TOKEN_DIGEST_HMAC_KEY: string;
+  REQUEST_CONTEXT_HMAC_KEY: string;
 }
 
 export function validateEnvironment(
@@ -73,6 +93,8 @@ export function validateEnvironment(
     assertRuntimeDatabaseRole(environment.DATABASE_URL);
   }
 
+  assertEncodedKeys(environment);
+
   return environment;
 }
 
@@ -112,5 +134,39 @@ function assertRuntimeDatabaseRole(databaseUrl: string): void {
     throw new Error(
       'Auth environment validation failed: production DATABASE_URL must use the mucyora_auth_app runtime role',
     );
+  }
+}
+
+function assertEncodedKeys(environment: AuthEnvironment): void {
+  const keys = [
+    ['IDENTITY_ENCRYPTION_SECRET', environment.IDENTITY_ENCRYPTION_SECRET],
+    ['IDENTITY_LOOKUP_HMAC_KEY', environment.IDENTITY_LOOKUP_HMAC_KEY],
+    ['TOKEN_DIGEST_HMAC_KEY', environment.TOKEN_DIGEST_HMAC_KEY],
+    ['REQUEST_CONTEXT_HMAC_KEY', environment.REQUEST_CONTEXT_HMAC_KEY],
+  ] as const;
+  const decoded = keys.map(([name, value]) => {
+    if (!/^[A-Za-z0-9_-]+={0,2}$/.test(value)) {
+      throw new Error(
+        `Auth environment validation failed: ${name} must be base64url encoded`,
+      );
+    }
+
+    const key = Buffer.from(value, 'base64url');
+    if (key.length < 32) {
+      throw new Error(
+        `Auth environment validation failed: ${name} must decode to at least 32 bytes`,
+      );
+    }
+    return { name, key };
+  });
+
+  for (let left = 0; left < decoded.length; left += 1) {
+    for (let right = left + 1; right < decoded.length; right += 1) {
+      if (decoded[left].key.equals(decoded[right].key)) {
+        throw new Error(
+          `Auth environment validation failed: ${decoded[left].name} and ${decoded[right].name} must differ`,
+        );
+      }
+    }
   }
 }
