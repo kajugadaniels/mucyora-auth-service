@@ -2,9 +2,10 @@
 
 ## Scope
 
-Phase 3 implements a private NIDA citizen-identity adapter. It does not expose
-an HTTP endpoint, create registration challenges, register users, or persist
-provider records in PostgreSQL.
+Phase 3 implements a private NIDA citizen-identity adapter. Phase 4 consumes
+that adapter through the registration application layer; Axios and provider
+response shapes remain private. The adapter itself does not expose an HTTP
+endpoint or persist raw provider records.
 
 The adapter accepts a normalized Rwanda NID from a future domain workflow and
 returns only this minimized contract:
