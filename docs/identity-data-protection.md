@@ -87,3 +87,13 @@ The test suite includes fixed HMAC and AES-GCM vectors, round trips,
 purpose-confusion rejection, ciphertext-tampering rejection, invalid NID
 rejection, token entropy checks, and key-separation checks.
 
+## Phase 3 Citizen Cache
+
+The citizen-provider adapter derives Redis keys from the versioned
+`identity-lookup` HMAC. It does not place the raw NID in a key. Only minimized
+positive results are cached, and each value is protected with the existing
+AES-256-GCM `citizen-snapshot` purpose.
+
+The provider's raw response and NID are discarded after normalization. Cache
+corruption and cache unavailability are treated as misses; neither condition
+permits plaintext fallback storage.
