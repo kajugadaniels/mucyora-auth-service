@@ -152,6 +152,18 @@ does not implement biometric verification or limited-to-full session upgrade.
 Phase 8 implements account-enrollment identity verification and marks a user
 verified on pass. It does not upgrade or replace the caller’s limited session.
 
+Phase 9 replaces a verified caller’s limited session with a new full session.
+The transaction checks the passed enrollment attempt belongs to the caller,
+revokes the old session and all its refresh tokens, creates the full session,
+and records the audit event before committing. A conditional session update
+and serializable isolation permit only one concurrent winner.
+
+Upgrade retries require the same idempotency key and request. The bounded
+idempotency record contains only a purpose-bound AES-GCM encrypted credential
+result. The upgrade-only guard accepts the just-revoked limited access token
+solely when its revocation reason proves a completed upgrade; all normal
+protected routes continue to reject revoked sessions.
+
 ## Database Safety
 
 Auth imports database behavior only from `@mucyora/db`. This repository must
