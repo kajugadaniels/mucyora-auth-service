@@ -17,7 +17,8 @@ export type IdentityEncryptionPurpose =
   | 'email-verification-token'
   | 'password-reset-token'
   | 'registration-challenge-token'
-  | 'verification-media-reference';
+  | 'verification-media-reference'
+  | 'session-upgrade-result';
 
 export interface IdentityEncryptionEnvelope {
   format: typeof FORMAT;
