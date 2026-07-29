@@ -99,6 +99,12 @@ MUCYORA_ENGINE_URL=http://localhost:8000
 MUCYORA_ENGINE_SERVICE_KEY=
 MUCYORA_ENGINE_TIMEOUT_MS=45000
 MUCYORA_ENGINE_MAX_CONCURRENCY=4
+STEP_UP_POLICY_VERSION=step-up-2026-07
+STEP_UP_CHALLENGE_TTL_SECONDS=600
+STEP_UP_ASSERTION_TTL_SECONDS=300
+MUCYORA_USER_SERVICE_KEY=
+MUCYORA_SIGNATURE_SERVICE_KEY=
+MUCYORA_AUTH_RECOVERY_SERVICE_KEY=
 ```
 
 Future variables must be added to `.env.example` in the same change that adds
@@ -135,6 +141,10 @@ their runtime validation.
 - Access, limited-access, refresh, replay-grace, session-upgrade idempotency,
   login, refresh, and lock settings are bounded at startup.
 - Production requires secure authentication cookies.
+- Step-up challenge and assertion lifetimes are bounded to 5–30 minutes and
+  1–10 minutes respectively.
+- User, Signature, Auth Recovery, and Engine service keys must be distinct from
+  every cryptographic key and from each other.
 
 The port is deliberately absent because the service always uses port `3000`.
 
