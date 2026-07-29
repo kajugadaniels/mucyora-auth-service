@@ -1,9 +1,15 @@
+import { generateKeyPairSync } from 'node:crypto';
 import {
   parseAllowedOrigins,
   validateEnvironment,
 } from './environment.validation';
 
 describe('environment validation', () => {
+  const signingKeys = generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+  });
   const baseEnvironment = {
     APP_ENV: 'test',
     DATABASE_URL:
@@ -18,6 +24,11 @@ describe('environment validation', () => {
     CITIZEN_API_URL: 'http://localhost:3100/citizens/lookup',
     CITIZEN_API_USERNAME: 'test-client',
     CITIZEN_API_PASSWORD: 'test-password',
+    MUCYORA_AUTH_ISSUER: 'http://localhost:3000',
+    MUCYORA_AUTH_ACCESS_AUDIENCES: 'mucyora-user',
+    MUCYORA_AUTH_SIGNING_KEY_ID: 'test-key-2026',
+    MUCYORA_AUTH_SIGNING_PRIVATE_KEY: signingKeys.privateKey,
+    MUCYORA_AUTH_SIGNING_PUBLIC_KEY: signingKeys.publicKey,
   };
 
   it('applies safe defaults', () => {
