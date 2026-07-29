@@ -70,6 +70,16 @@ identity providers without authorization, or publish an unpatched issue.
   within a bounded short lifetime.
 - Challenge attempt and consumption operations use conditional database
   updates; only one transaction can consume a pending challenge.
+- New passwords use bounded-concurrency Argon2id and a common-password policy.
+- Registration atomically stores the credential, encrypted identity, consent
+  versions, token digest, challenge consumption, audit, and outbox record.
+- Email verification tokens are random, digest-only, expiring, supersedable,
+  and atomically single-use.
+- Raw email tokens appear in durable outbox state only as purpose-bound
+  AES-GCM ciphertext.
+- Resend uses generic responses and keyed Redis limits by IP and email.
+- Mail delivery occurs after commit with per-event Redis locks and safe failure
+  codes.
 
 ## Sensitive Data
 
@@ -95,6 +105,9 @@ records.
 Phase 4 exposes only registration initiation. It persists an encrypted,
 minimized challenge and never creates a user account. The normalized email is
 bound to the challenge, while the plaintext NID is neither stored nor returned.
+
+Phase 5 consumes that challenge to create the account. It does not issue a
+session or access token; those controls remain Phase 6 work.
 
 ## Database Safety
 
