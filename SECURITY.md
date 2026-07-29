@@ -56,6 +56,13 @@ identity providers without authorization, or publish an unpatched issue.
 - Opaque tokens use cryptographically secure randomness and digest-only
   persistence contracts.
 - Security-event metadata rejects sensitive fields and structured payloads.
+- Citizen-provider destinations are fixed at startup, redirects are disabled,
+  production requires HTTPS, and certificate verification remains enabled.
+- Citizen-provider retries are bounded and protected by a circuit breaker.
+- Citizen cache keys use versioned HMAC digests and positive cache values use
+  purpose-bound AES-256-GCM encryption.
+- Provider responses are schema-validated and minimized before leaving the
+  adapter.
 
 ## Sensitive Data
 
@@ -74,6 +81,10 @@ Phase 2 cryptography and token utilities follow the implementation plan and
 reviewed database contract. They are reusable primitives only; later workflow
 phases must still use them correctly and atomically.
 
+Phase 3 uses those primitives for the private citizen-provider cache. It does
+not expose a citizen lookup endpoint, persist provider payloads, or create user
+records.
+
 ## Database Safety
 
 Auth imports database behavior only from `@mucyora/db`. This repository must
@@ -90,6 +101,8 @@ reviewed and executed in `api/db`.
 - Run the container as its non-root user.
 - Terminate TLS at an approved trusted boundary.
 - Restrict database and future internal-provider egress.
+- Restrict citizen-provider and Redis egress to their approved destinations.
+- Require provider HTTPS and Redis TLS in production.
 - Keep Swagger disabled unless there is an approved operational need.
 - Use readiness for traffic admission and liveness only for process recovery.
 
