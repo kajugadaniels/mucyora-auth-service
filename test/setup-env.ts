@@ -11,3 +11,7 @@ process.env.TOKEN_DIGEST_HMAC_KEY =
   'AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI';
 process.env.REQUEST_CONTEXT_HMAC_KEY =
   'AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM';
+process.env.REDIS_URL = 'redis://localhost:6379';
+process.env.CITIZEN_API_URL = 'http://localhost:3100/citizens/lookup';
+process.env.CITIZEN_API_USERNAME = 'test-client';
+process.env.CITIZEN_API_PASSWORD = 'test-password';
