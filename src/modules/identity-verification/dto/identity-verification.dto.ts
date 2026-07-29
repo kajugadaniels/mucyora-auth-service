@@ -10,6 +10,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { RWANDA_OPENAPI_EXAMPLES } from '../../../common/openapi/auth-openapi';
 
 export class CreateUploadPolicyDto {
   @ApiProperty({ enum: [VerificationMediaType.ID_DOCUMENT] })
@@ -22,18 +23,21 @@ export class CreateUploadPolicyDto {
   @MaxLength(32)
   contentType!: 'image/jpeg' | 'image/png';
 
-  @ApiProperty({ description: 'Base64 SHA-256 checksum' })
+  @ApiProperty({
+    description: 'Base64 SHA-256 checksum',
+    example: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+  })
   @IsString()
   @Matches(/^[A-Za-z0-9+/]{43}=$/)
   checksum!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 1200 })
   @IsInt()
   @Min(1)
   @Max(12_000)
   width!: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: 1600 })
   @IsInt()
   @Min(1)
   @Max(12_000)
@@ -41,23 +45,32 @@ export class CreateUploadPolicyDto {
 }
 
 export class ConfirmUploadDto extends CreateUploadPolicyDto {
-  @ApiProperty()
+  @ApiProperty({
+    example:
+      'identity-verification/2026/07/e9b5dc65-6fe8-4b0d-9b65-56ca8560da44/id-document.png',
+  })
   @IsString()
   @MaxLength(512)
   objectKey!: string;
 }
 
 export class VerificationAttemptResponseDto {
-  @ApiProperty()
+  @ApiProperty({
+    format: 'uuid',
+    example: RWANDA_OPENAPI_EXAMPLES.attemptId,
+  })
   id!: string;
 
-  @ApiProperty({ enum: VerificationAttemptStatus })
+  @ApiProperty({
+    enum: VerificationAttemptStatus,
+    example: VerificationAttemptStatus.PENDING,
+  })
   status!: VerificationAttemptStatus;
 
-  @ApiProperty()
+  @ApiProperty({ example: 1 })
   attemptNumber!: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: '2026-07-01' })
   policyVersion!: string;
 
   @ApiProperty({ required: false })
