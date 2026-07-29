@@ -30,6 +30,9 @@ export class HttpMailAdapter implements MailProvider {
               infer: true,
             })}`,
             'content-type': 'application/json',
+            ...(message.deliveryId
+              ? { 'idempotency-key': message.deliveryId }
+              : {}),
           },
           maxRedirects: 0,
           timeout: this.config.get('MAIL_PROVIDER_TIMEOUT_MS', {
