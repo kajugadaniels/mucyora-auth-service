@@ -22,6 +22,12 @@ This directory is the operational and engineering reference for `api/auth`.
 16. [Step-up identity verification](step-up-verification.md)
 17. [Operational jobs](operational-jobs.md)
 18. [Performance validation](performance-validation.md)
+19. [Threat model](threat-model.md)
+20. [Credential rotation and recovery](credential-rotation-and-recovery.md)
+21. [Incident response runbook](incident-response-runbook.md)
+22. [Controlled deployment and rollback](deployment-and-rollback.md)
+23. [Compatibility removal plan](compatibility-removal-plan.md)
+24. [Release readiness](release-readiness.md)
 
 ## Implementation Planning
 
