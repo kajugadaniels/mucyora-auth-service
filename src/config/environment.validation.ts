@@ -165,6 +165,9 @@ const environmentSchema = Joi.object({
     .required(),
   MUCYORA_AUTH_SIGNING_PRIVATE_KEY: Joi.string().min(256).required(),
   MUCYORA_AUTH_SIGNING_PUBLIC_KEY: Joi.string().min(128).required(),
+  MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON: Joi.string()
+    .max(32_768)
+    .default('[]'),
   ACCESS_TOKEN_TTL_SECONDS: Joi.number()
     .integer()
     .min(300)
@@ -397,6 +400,7 @@ export interface AuthEnvironment {
   MUCYORA_AUTH_SIGNING_KEY_ID: string;
   MUCYORA_AUTH_SIGNING_PRIVATE_KEY: string;
   MUCYORA_AUTH_SIGNING_PUBLIC_KEY: string;
+  MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON: string;
   ACCESS_TOKEN_TTL_SECONDS: number;
   LIMITED_ACCESS_TOKEN_TTL_SECONDS: number;
   REFRESH_TOKEN_TTL_SECONDS: number;
@@ -593,6 +597,10 @@ function assertAuthSigningConfiguration(environment: AuthEnvironment): void {
     ) {
       throw new Error('Audience required');
     }
+    parsePreviousSigningKeys(
+      environment.MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON,
+      environment.MUCYORA_AUTH_SIGNING_KEY_ID,
+    );
   } catch {
     throw new Error(
       'Auth environment validation failed: Auth signing keys must be valid RSA PEM keys',
@@ -610,6 +618,42 @@ function assertAuthSigningConfiguration(environment: AuthEnvironment): void {
       'Auth environment validation failed: production authentication cookies must be secure',
     );
   }
+}
+
+export function parsePreviousSigningKeys(
+  value: string,
+  activeKeyId: string,
+): Array<{ keyId: string; publicKey: string }> {
+  const parsed = JSON.parse(value) as unknown;
+  if (!Array.isArray(parsed) || parsed.length > 3) {
+    throw new Error('At most three previous signing keys are allowed');
+  }
+
+  const seen = new Set([activeKeyId]);
+  return parsed.map((candidate: unknown) => {
+    if (typeof candidate !== 'object' || candidate === null) {
+      throw new Error('Invalid or duplicate previous signing key');
+    }
+    const record = candidate as Record<string, unknown>;
+    const keyId = record.keyId;
+    const encodedPublicKey = record.publicKey;
+    if (
+      typeof keyId !== 'string' ||
+      !/^[A-Za-z0-9._:-]{8,128}$/.test(keyId) ||
+      typeof encodedPublicKey !== 'string' ||
+      encodedPublicKey.length < 128 ||
+      encodedPublicKey.includes('PRIVATE KEY') ||
+      seen.has(keyId)
+    ) {
+      throw new Error('Invalid or duplicate previous signing key');
+    }
+    const publicKey = createPublicKey(encodedPublicKey);
+    if (publicKey.asymmetricKeyType !== 'rsa') {
+      throw new Error('Previous signing keys must be RSA public keys');
+    }
+    seen.add(keyId);
+    return { keyId, publicKey: encodedPublicKey };
+  });
 }
 
 function assertMailConfiguration(environment: AuthEnvironment): void {
