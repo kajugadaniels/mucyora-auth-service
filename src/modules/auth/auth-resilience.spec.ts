@@ -1,21 +1,3 @@
-
-git add "contracts/auth-api-contract.json"
-git commit -m "feat(auth): define versioned authentication api contract"
-
-git add "deploy/kubernetes/auth.yaml"
-git commit -m "feat(deploy): add hardened auth deployment template"
-
-git add "docs/INDEX.md"
-git commit -m "docs(auth): index phase 13 operational documentation"
-
-git add "docs/configuration-and-operations.md"
-git commit -m "docs(auth): document jwt overlap key configuration"
-
-git add "docs/threat-model.md"
-git commit -m "docs(security): add authentication threat model"
-
-git add "docs/credential-rotation-and-recovery.md"
-git commit -m "docs(security): add credential rotation and recovery drills"
 import { ConfigService } from '@nestjs/config';
 import type Redis from 'ioredis';
 
