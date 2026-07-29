@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 2 of the implementation plan is complete. In addition to the secure
+Phase 3 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -34,10 +34,16 @@ service foundation, Auth now provides:
 - bounded idempotency support;
 - minimized durable authentication security events;
 - a generated shared database contract for future Auth workflows.
+- a private typed NIDA citizen-identity provider;
+- fixed-target authenticated HTTP with TLS validation and keep-alive;
+- response validation, minimization, and safe provider errors;
+- bounded timeouts, retries, backoff, and circuit breaking;
+- encrypted Redis positive caching with HMAC-derived keys;
+- duplicate in-flight lookup suppression and privacy-safe metrics.
 
-Authentication, registration, NIDA, password, session, and identity-verification
-business functionality is not implemented yet. Existing domain modules remain
-ownership shells.
+Authentication, registration, public citizen lookup, password, session, and
+identity-verification business functionality is not implemented yet. Existing
+domain modules remain ownership shells.
 
 ## Service Boundary
 
@@ -124,9 +130,13 @@ The shared Prisma client must already be generated and built in `api/db`.
   media, or connection strings.
 - Use only `mucyora_auth_app` in the production `DATABASE_URL`.
 - Keep future calls to `api/engine` authenticated and internal.
+- Require HTTPS for the production citizen provider and `rediss://` for
+  production Redis.
+- Never expose or persist a raw provider response; cache only the minimized,
+  encrypted positive result.
 
-Credential hashing, token storage, rate limiting, and identity encryption are
-requirements for later phases and are not claimed as implemented.
+Credential hashing, workflow token storage, distributed rate limiting, and
+registration challenges remain requirements for later phases.
 
 ## Container Build
 
@@ -149,6 +159,6 @@ documentation rules.
 ## Production Readiness
 
 The foundation is not a production-ready authentication product by itself.
-Later phases must still implement and validate cryptography, distributed rate
-limiting, NIDA resilience, registration, sessions, recovery, verification,
-outbox processing, load testing, and release security gates.
+Later phases must still implement public registration contracts, distributed
+rate limiting, registration, sessions, recovery, verification, outbox
+processing, load testing, and release security gates.
