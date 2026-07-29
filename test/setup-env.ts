@@ -1,3 +1,11 @@
+import { generateKeyPairSync } from 'node:crypto';
+
+const testSigningKeys = generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+  privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
+});
+
 process.env.APP_ENV = 'test';
 process.env.DATABASE_URL =
   'postgresql://mucyora_auth_app:placeholder@localhost:5432/mucyora';
@@ -29,3 +37,18 @@ process.env.REGISTRATION_LIMIT_PER_HOUR = '3';
 process.env.EMAIL_RESEND_LIMIT_PER_HOUR = '3';
 process.env.MAIL_OUTBOX_WORKER_ENABLED = 'false';
 process.env.MUCYORA_USER_APP_URL = 'http://localhost:4000';
+process.env.MUCYORA_AUTH_ISSUER = 'http://localhost:3000';
+process.env.MUCYORA_AUTH_ACCESS_AUDIENCES = 'mucyora-user,mucyora-signature';
+process.env.MUCYORA_AUTH_SIGNING_KEY_ID = 'test-key-2026';
+process.env.MUCYORA_AUTH_SIGNING_PRIVATE_KEY = testSigningKeys.privateKey;
+process.env.MUCYORA_AUTH_SIGNING_PUBLIC_KEY = testSigningKeys.publicKey;
+process.env.ACCESS_TOKEN_TTL_SECONDS = '900';
+process.env.LIMITED_ACCESS_TOKEN_TTL_SECONDS = '900';
+process.env.REFRESH_TOKEN_TTL_SECONDS = '2592000';
+process.env.REFRESH_REPLAY_GRACE_SECONDS = '10';
+process.env.LOGIN_LIMIT_PER_MINUTE = '5';
+process.env.REFRESH_LIMIT_PER_MINUTE = '10';
+process.env.LOGIN_LOCK_THRESHOLD = '10';
+process.env.LOGIN_LOCK_SECONDS = '900';
+process.env.COOKIE_SECURE = 'false';
+process.env.COOKIE_SAME_SITE = 'lax';
