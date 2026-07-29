@@ -13,6 +13,7 @@ interface ErrorResponse {
   statusCode: number;
   message: string | string[];
   error?: string;
+  code?: string;
   path: string;
   timestamp: string;
   correlationId?: string;
@@ -80,6 +81,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       ...base,
       message: normalizeMessage(record.message),
       error: typeof record.error === 'string' ? record.error : undefined,
+      code:
+        typeof record.code === 'string' &&
+        /^[A-Z][A-Z0-9_]{2,63}$/.test(record.code)
+          ? record.code
+          : undefined,
     };
   }
 }
