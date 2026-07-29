@@ -16,6 +16,7 @@ This directory is the operational and engineering reference for `api/auth`.
 10. [Citizen provider integration](citizen-provider-integration.md)
 11. [Citizen lookup and registration challenges](registration-challenges.md)
 12. [Registration and email verification](registration-and-email-verification.md)
+13. [Authentication and sessions](authentication-and-sessions.md)
 
 ## Implementation Planning
 
