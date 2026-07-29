@@ -92,6 +92,16 @@ identity providers without authorization, or publish an unpatched issue.
 - Browser refresh cookies are scoped, HttpOnly, secure in production, and
   protected by an HMAC-bound double-submit CSRF token.
 - Session revocation atomically revokes associated refresh records.
+- Password recovery uses generic responses, distributed IP/email limits, and
+  indexed digest-only tokens with bounded expiry.
+- Reset tokens are conditionally consumed so only one concurrent request can
+  succeed.
+- Authenticated password change requires the current password and rejects
+  current-password reuse.
+- Successful reset or change revokes every active session, refresh token, and
+  outstanding recovery request for the user.
+- Password reset links are encrypted with a purpose-bound envelope in the
+  outbox, and password-change notifications are delivered asynchronously.
 
 ## Sensitive Data
 
@@ -121,6 +131,9 @@ bound to the challenge, while the plaintext NID is neither stored nor returned.
 Phase 5 consumes that challenge to create the account. It does not issue a
 session or access token. Phase 6 performs that work only after valid
 credentials and account gates.
+
+Phase 7 implements password recovery and authenticated password change. It
+does not implement biometric verification or limited-to-full session upgrade.
 
 ## Database Safety
 
