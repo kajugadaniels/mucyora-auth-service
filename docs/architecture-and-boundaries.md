@@ -8,9 +8,10 @@ identity-verification orchestration.
 
 ## Current Implementation
 
-The repository currently contains module shells and a starter root endpoint.
-New documentation and API contracts must not describe module shells as complete
-features.
+The repository contains a production-oriented HTTP and database foundation plus
+domain module shells. It exposes liveness and readiness endpoints. It does not
+yet implement registration, login, tokens, password workflows, NIDA calls, or
+identity verification.
 
 ## Dependencies
 
@@ -24,6 +25,23 @@ Client
 `api/engine` returns verification results but never owns user state. `api/auth`
 validates the request, controls attempts and authorization, and persists the
 result.
+
+## Runtime Flow
+
+```text
+HTTP request
+  -> bounded body parser and Helmet
+  -> exact-origin CORS
+  -> correlation ID middleware
+  -> global DTO validation
+  -> controller
+  -> domain service
+  -> @mucyora/db or a typed integration adapter
+  -> safe exception response and structured log
+```
+
+Health liveness stops before all dependencies. Readiness performs only a cached
+database check in Phase 1.
 
 ## Ownership Rules
 
