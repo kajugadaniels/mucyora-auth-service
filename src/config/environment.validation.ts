@@ -149,6 +149,7 @@ const environmentSchema = Joi.object({
     .max(60_000)
     .default(5_000),
   OUTBOX_BATCH_SIZE: Joi.number().integer().min(1).max(100).default(20),
+  OUTBOX_DELIVERY_CONCURRENCY: Joi.number().integer().min(1).max(16).default(4),
   OUTBOX_MAX_ATTEMPTS: Joi.number().integer().min(1).max(25).default(10),
   OUTBOX_LEASE_SECONDS: Joi.number().integer().min(30).max(900).default(120),
   OUTBOX_RETRY_BASE_SECONDS: Joi.number().integer().min(5).max(300).default(30),
@@ -386,6 +387,7 @@ export interface AuthEnvironment {
   MAIL_PROVIDER_TIMEOUT_MS: number;
   OUTBOX_POLL_INTERVAL_MS: number;
   OUTBOX_BATCH_SIZE: number;
+  OUTBOX_DELIVERY_CONCURRENCY: number;
   OUTBOX_MAX_ATTEMPTS: number;
   OUTBOX_LEASE_SECONDS: number;
   OUTBOX_RETRY_BASE_SECONDS: number;
