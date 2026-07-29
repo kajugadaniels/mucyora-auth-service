@@ -13,7 +13,9 @@
     "load:validate": "node --check performance/k6/auth-load.js && node --check performance/k6/auth-soak.js",
     "soak:local": "ts-node scripts/soak-auth-runtime.ts",
     "check:boundary": "node scripts/assert-project-boundary.mjs",
-    "check": "npm run check:boundary && npm run lint:check && npm run build && npm test -- --runInBand && npm run test:e2e -- --runInBand",
+    "check:api-contract": "node scripts/verify-api-contract.mjs",
+    "check:release": "npm run check:boundary && npm run check:api-contract && npm run load:validate && npm run lint:check && npm run build && npm test -- --runInBand && npm run test:e2e -- --runInBand",
+    "check": "npm run check:release",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -82,6 +84,9 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "overrides": {
+    "js-yaml": "5.2.2"
   },
   "jest": {
     "moduleFileExtensions": [
