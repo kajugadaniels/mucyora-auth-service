@@ -42,3 +42,33 @@ calls the database.
 
 The single raw readiness query is the only Phase 1 exception and does not read
 application tables or user data.
+
+## Phase 2 Auth Contract
+
+The shared schema now defines:
+
+- normalized account state and `UserCredential`;
+- protected identity compatibility fields;
+- `RegistrationChallenge`;
+- strengthened email-verification tokens;
+- `PasswordResetRequest`;
+- `AuthSession` and generation-based refresh-token fields;
+- `IdentityVerificationAttempt` and `VerificationMedia`;
+- `UserConsent`;
+- `AuthSecurityEvent`;
+- `IdempotencyRecord`;
+- `OutboxEvent`.
+
+Legacy fields and tables remain temporarily for compatible rollout. New Auth
+code must use the Phase 2 fields and must not write new plaintext or ordinary
+hash identity representations.
+
+The migration exists in `api/db` but is not applied by this project.
+
+## Bounded Access
+
+- Idempotency claims use one unique lookup and one create attempt.
+- A uniqueness race performs one bounded reread.
+- Completion uses a conditional single-record update.
+- Security-event writes select only the created identifier.
+- Cleanup and bulk polling are deferred until their indexed Phase 11 jobs.
