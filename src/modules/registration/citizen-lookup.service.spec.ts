@@ -126,7 +126,10 @@ describe('CitizenLookupService', () => {
     expect(JSON.stringify(response)).not.toContain('provider-private');
     expect(JSON.stringify(response)).not.toContain('private-portrait');
     expect(encryption.seal).toHaveBeenCalledWith(
-      JSON.stringify(citizen),
+      JSON.stringify({
+        ...citizen,
+        normalizedNationalId: nationalId,
+      }),
       'citizen-snapshot',
     );
     const challengeCreateCalls = transaction.registrationChallenge.create.mock
