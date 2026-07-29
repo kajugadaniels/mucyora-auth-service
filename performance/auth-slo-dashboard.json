@@ -1,0 +1,62 @@
+{
+  "title": "MUCYORA Auth Service SLOs",
+  "version": 1,
+  "dataSourceContract": {
+    "requestEvent": "http_request_completed",
+    "service": "mucyora-auth",
+    "requiredFields": ["route", "method", "statusCode", "durationMs"]
+  },
+  "panels": [
+    {
+      "name": "Availability",
+      "objective": "99.9%",
+      "query": "successful non-client-error requests / eligible requests"
+    },
+    {
+      "name": "Login latency",
+      "route": "/api/v1/auth/login",
+      "p95Ms": 750,
+      "p99Ms": 1200
+    },
+    {
+      "name": "Refresh latency",
+      "route": "/api/v1/auth/refresh",
+      "p95Ms": 250,
+      "p99Ms": 500
+    },
+    {
+      "name": "Citizen lookup latency",
+      "route": "/api/v1/registration/citizen/lookup",
+      "p95Ms": 2500,
+      "p99Ms": 6000
+    },
+    {
+      "name": "Server error rate",
+      "objective": "<1%",
+      "excludeStatuses": [400, 401, 403, 404, 409, 429]
+    },
+    {
+      "name": "Operational dead letters",
+      "source": "/api/v1/internal/operations/jobs",
+      "alertWhen": "outboxDeadLetters > 0"
+    }
+  ],
+  "alerts": [
+    {
+      "name": "availability-burn",
+      "condition": "5m error budget burn > 14.4x or 1h burn > 6x"
+    },
+    {
+      "name": "login-p99",
+      "condition": "p99 duration > 1200ms for 10m"
+    },
+    {
+      "name": "refresh-p99",
+      "condition": "p99 duration > 500ms for 10m"
+    },
+    {
+      "name": "dead-letters",
+      "condition": "outboxDeadLetters > 0"
+    }
+  ]
+}
