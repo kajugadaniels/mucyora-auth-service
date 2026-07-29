@@ -3,7 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { assertPurposeSeparatedKeys, decodeKeyMaterial } from './key-material';
 
-type DigestPurpose = 'identity-lookup' | 'token' | 'request-context';
+type DigestPurpose =
+  'identity-lookup' | 'token' | 'request-context' | 'citizen-snapshot';
 
 @Injectable()
 export class KeyedDigestService {
@@ -50,6 +51,10 @@ export class KeyedDigestService {
 
   requestContext(value: string): string {
     return this.digest('request-context', value, this.contextKey);
+  }
+
+  citizenSnapshot(value: string): string {
+    return this.digest('citizen-snapshot', value, this.contextKey);
   }
 
   private digest(purpose: DigestPurpose, value: string, key: Buffer): string {
