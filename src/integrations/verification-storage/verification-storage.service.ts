@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import {
   DeleteObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post';
@@ -24,6 +25,16 @@ export interface ConfirmedVerificationObject {
   checksum: string;
   contentType: string;
   sizeBytes: number;
+}
+
+export interface VerificationStorageObject {
+  key: string;
+  lastModified: Date;
+}
+
+export interface VerificationStoragePage {
+  objects: VerificationStorageObject[];
+  nextContinuationToken?: string;
 }
 
 @Injectable()
@@ -152,6 +163,28 @@ export class VerificationStorageService {
         VersionId: versionId,
       }),
     );
+  }
+
+  async listObjects(
+    limit: number,
+    continuationToken?: string,
+  ): Promise<VerificationStoragePage> {
+    const response = await this.client.send(
+      new ListObjectsV2Command({
+        Bucket: this.config.get('AWS_S3_VERIFICATION_BUCKET', { infer: true }),
+        Prefix: this.config.get('AWS_S3_VERIFICATION_PREFIX', { infer: true }),
+        MaxKeys: limit,
+        ContinuationToken: continuationToken,
+      }),
+    );
+    return {
+      objects: (response.Contents ?? []).flatMap((object) =>
+        object.Key && object.LastModified
+          ? [{ key: object.Key, lastModified: object.LastModified }]
+          : [],
+      ),
+      nextContinuationToken: response.NextContinuationToken,
+    };
   }
 
   objectReferenceDigest(objectKey: string): string {
