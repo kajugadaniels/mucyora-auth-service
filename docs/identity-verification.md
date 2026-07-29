@@ -94,3 +94,6 @@ does not issue a full session.
 Terminal pass/fail/retry media is deleted immediately when possible. Manual
 review media remains under its retention deadline. Expired undeleted media is
 retried by a bounded reconciliation worker using the schema cleanup index.
+Active legal holds and manual-review attempts are excluded. Object-storage
+reconciliation uses a continuation cursor and deletes only old objects whose
+keyed reference digest is not tracked in the database.
