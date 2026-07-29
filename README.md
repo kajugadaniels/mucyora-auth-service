@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 6 of the implementation plan is complete. In addition to the secure
+Phase 7 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -58,9 +58,14 @@ service foundation, Auth now provides:
 - distributed refresh coordination and family reuse detection;
 - secure cookie/CSRF and explicit native compatibility transports;
 - logout, logout-all, bounded session listing, and owned revocation.
+- generic, distributed-rate-limited password recovery;
+- indexed digest-only, expiring, atomically single-use reset tokens;
+- current-password-protected password change;
+- password-change session and refresh-token revocation;
+- asynchronous reset and password-change security notifications.
 
-Password recovery/change, biometric identity verification, and session upgrade
-business functionality is not implemented yet.
+Biometric identity verification and session-upgrade business functionality are
+not implemented yet.
 
 ## Service Boundary
 
@@ -107,6 +112,9 @@ environment variables.
 | `POST`   | `/api/v1/auth/logout-all`             | Revoke all owned sessions                            |
 | `GET`    | `/api/v1/auth/sessions`               | List active owned sessions                           |
 | `DELETE` | `/api/v1/auth/sessions/:sessionId`    | Revoke one owned session                             |
+| `POST`   | `/api/v1/auth/password/forgot`        | Request generic password recovery                    |
+| `POST`   | `/api/v1/auth/password/reset`         | Consume a single-use password reset                  |
+| `POST`   | `/api/v1/auth/password/change`        | Change a password using current credentials          |
 | `GET`    | `/.well-known/jwks.json`              | Return public access-token verification keys         |
 
 Later application APIs will be mounted below `/api/v1` in their separately
@@ -163,8 +171,8 @@ The shared Prisma client must already be generated and built in `api/db`.
 - Never expose or persist a raw provider response; cache only the minimized,
   encrypted positive result.
 
-Password recovery, biometric identity verification, and limited-to-full
-session upgrade remain requirements for later phases.
+Biometric identity verification and limited-to-full session upgrade remain
+requirements for later phases.
 
 ## Container Build
 
@@ -186,7 +194,6 @@ documentation rules.
 
 ## Production Readiness
 
-The foundation is not a production-ready authentication product by itself.
-Later phases must still implement password recovery/change, biometric identity
-verification, limited-to-full upgrade, operational cleanup, load testing, and
-release security gates.
+The service is not yet a production-ready authentication product. Later phases
+must still implement biometric identity verification, limited-to-full upgrade,
+operational cleanup, load testing, and release security gates.
