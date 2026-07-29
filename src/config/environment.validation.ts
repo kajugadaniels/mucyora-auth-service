@@ -262,6 +262,22 @@ const environmentSchema = Joi.object({
     .min(1)
     .max(32)
     .default(4),
+  STEP_UP_POLICY_VERSION: Joi.string()
+    .pattern(/^[A-Za-z0-9._:-]{8,64}$/)
+    .required(),
+  STEP_UP_CHALLENGE_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(300)
+    .max(1_800)
+    .default(600),
+  STEP_UP_ASSERTION_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(60)
+    .max(600)
+    .default(300),
+  MUCYORA_USER_SERVICE_KEY: Joi.string().min(32).max(512).required(),
+  MUCYORA_SIGNATURE_SERVICE_KEY: Joi.string().min(32).max(512).required(),
+  MUCYORA_AUTH_RECOVERY_SERVICE_KEY: Joi.string().min(32).max(512).required(),
 }).unknown(true);
 
 export interface AuthEnvironment {
@@ -356,6 +372,12 @@ export interface AuthEnvironment {
   MUCYORA_ENGINE_SERVICE_KEY: string;
   MUCYORA_ENGINE_TIMEOUT_MS: number;
   MUCYORA_ENGINE_MAX_CONCURRENCY: number;
+  STEP_UP_POLICY_VERSION: string;
+  STEP_UP_CHALLENGE_TTL_SECONDS: number;
+  STEP_UP_ASSERTION_TTL_SECONDS: number;
+  MUCYORA_USER_SERVICE_KEY: string;
+  MUCYORA_SIGNATURE_SERVICE_KEY: string;
+  MUCYORA_AUTH_RECOVERY_SERVICE_KEY: string;
 }
 
 export function validateEnvironment(
@@ -447,6 +469,20 @@ function assertVerificationConfiguration(environment: AuthEnvironment): void {
   if (separatedKeys.includes(environment.MUCYORA_ENGINE_SERVICE_KEY)) {
     throw new Error(
       'Auth environment validation failed: MUCYORA_ENGINE_SERVICE_KEY must differ from all other security keys',
+    );
+  }
+  const internalServiceKeys = [
+    environment.MUCYORA_USER_SERVICE_KEY,
+    environment.MUCYORA_SIGNATURE_SERVICE_KEY,
+    environment.MUCYORA_AUTH_RECOVERY_SERVICE_KEY,
+  ];
+  if (
+    internalServiceKeys.some((key) => separatedKeys.includes(key)) ||
+    internalServiceKeys.includes(environment.MUCYORA_ENGINE_SERVICE_KEY) ||
+    new Set(internalServiceKeys).size !== internalServiceKeys.length
+  ) {
+    throw new Error(
+      'Auth environment validation failed: internal service keys must be purpose-separated',
     );
   }
 }
