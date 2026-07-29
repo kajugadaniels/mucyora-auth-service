@@ -39,6 +39,26 @@
       "name": "Operational dead letters",
       "source": "/api/v1/internal/operations/jobs",
       "alertWhen": "outboxDeadLetters > 0"
+    },
+    {
+      "name": "Readiness",
+      "source": "/health/ready",
+      "alertWhen": "unavailable for 3 consecutive checks"
+    },
+    {
+      "name": "Runtime saturation",
+      "signals": ["cpu", "memory", "eventLoopLag", "databasePoolWait"],
+      "alertWhen": "resource threshold exceeded for 10m"
+    },
+    {
+      "name": "Dependency failures",
+      "signals": ["nidaCircuitOpen", "engineTimeouts", "redisErrors"],
+      "alertWhen": "error ratio exceeds approved dependency budget for 5m"
+    },
+    {
+      "name": "Security anomalies",
+      "signals": ["refreshReuse", "loginRateLimited", "stepUpReplay"],
+      "alertWhen": "reviewed baseline threshold exceeded"
     }
   ],
   "alerts": [
@@ -57,6 +77,22 @@
     {
       "name": "dead-letters",
       "condition": "outboxDeadLetters > 0"
+    },
+    {
+      "name": "readiness-failure",
+      "condition": "3 consecutive readiness failures"
+    },
+    {
+      "name": "resource-saturation",
+      "condition": "cpu > 80% or memory > 85% for 10m"
+    },
+    {
+      "name": "dependency-error-budget",
+      "condition": "dependency error ratio exceeds approved quota for 5m"
+    },
+    {
+      "name": "security-event-anomaly",
+      "condition": "security event rate exceeds reviewed baseline"
     }
   ]
 }
