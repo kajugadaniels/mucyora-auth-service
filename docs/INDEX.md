@@ -20,6 +20,7 @@ This directory is the operational and engineering reference for `api/auth`.
 14. [Password lifecycle](password-lifecycle.md)
 15. [Account identity verification](identity-verification.md)
 16. [Step-up identity verification](step-up-verification.md)
+17. [Operational jobs](operational-jobs.md)
 
 ## Implementation Planning
 
