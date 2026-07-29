@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { ConfigService } from '@nestjs/config';
-import type Redis from 'ioredis';
 
 import { DatabaseService } from '../../common/database/database.service';
+import { DistributedJobLockService } from '../../common/operations/distributed-job-lock.service';
 import { IdentityEncryptionService } from '../../common/security/identity-encryption.service';
 import { AuthEnvironment } from '../../config/environment.validation';
 import { MailOutboxWorker } from './mail-outbox.worker';
@@ -21,13 +21,13 @@ describe('MailOutboxWorker', () => {
               recipient: 'user@example.com',
               tokenEncrypted: 'encrypted-token',
             },
+            attemptCount: 0,
           },
         ]),
         updateMany,
       },
     } as unknown as DatabaseService;
     const send = jest.fn().mockResolvedValue(undefined);
-    const redis = readyRedis();
     const worker = new MailOutboxWorker(
       database,
       workerConfig(),
@@ -43,13 +43,17 @@ describe('MailOutboxWorker', () => {
         }),
       } as unknown as MailTemplateService,
       { send },
-      redis,
+      immediateLock(),
     );
 
     await expect(worker.dispatchBatch()).resolves.toBe(1);
     expect(send).toHaveBeenCalledTimes(1);
-    expect(updateMany.mock.calls[0][0]).toMatchObject({
-      where: { id: 'outbox-1', publishedAt: null },
+    expect(updateMany.mock.calls[1][0]).toMatchObject({
+      where: {
+        id: 'outbox-1',
+        publishedAt: null,
+        processingBy: expect.any(String),
+      },
       data: { lastError: null },
     });
   });
@@ -63,6 +67,7 @@ describe('MailOutboxWorker', () => {
             id: 'outbox-1',
             eventType: 'WELCOME_NEXT_STEP',
             payload: { recipient: 'user@example.com' },
+            attemptCount: 9,
           },
         ]),
         updateMany,
@@ -83,12 +88,16 @@ describe('MailOutboxWorker', () => {
       {
         send: jest.fn().mockRejectedValue(new Error('provider secret')),
       },
-      readyRedis(),
+      immediateLock(),
     );
 
     await expect(worker.dispatchBatch()).resolves.toBe(0);
-    expect(updateMany.mock.calls[0][0]).toMatchObject({
-      data: { lastError: 'MAIL_DELIVERY_FAILED' },
+    expect(updateMany.mock.calls[1][0]).toMatchObject({
+      data: {
+        lastError: 'MAIL_DELIVERY_FAILED',
+        deadLetteredAt: expect.any(Date),
+        nextAttemptAt: expect.any(Date),
+      },
     });
   });
 
@@ -110,6 +119,7 @@ describe('MailOutboxWorker', () => {
               recipient: 'user@example.com',
               tokenEncrypted: 'encrypted-reset-token',
             },
+            attemptCount: 0,
           },
         ]),
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
@@ -121,7 +131,7 @@ describe('MailOutboxWorker', () => {
       { open } as unknown as IdentityEncryptionService,
       { passwordReset } as unknown as MailTemplateService,
       { send: jest.fn().mockResolvedValue(undefined) },
-      readyRedis(),
+      immediateLock(),
     );
 
     await expect(worker.dispatchBatch()).resolves.toBe(1);
@@ -136,18 +146,24 @@ describe('MailOutboxWorker', () => {
   });
 });
 
-function readyRedis(): Redis {
+function immediateLock(): DistributedJobLockService {
   return {
-    status: 'ready',
-    set: jest.fn().mockResolvedValue('OK'),
-    eval: jest.fn().mockResolvedValue(1),
-  } as unknown as Redis;
+    runExclusive: jest.fn(
+      async (_name: string, _ttl: number, work: () => Promise<unknown>) =>
+        work(),
+    ),
+  } as unknown as DistributedJobLockService;
 }
 
 function workerConfig(): ConfigService<AuthEnvironment, true> {
   const values: Partial<AuthEnvironment> = {
     CACHE_PREFIX: 'mucyora:auth:',
     OUTBOX_BATCH_SIZE: 20,
+    OUTBOX_MAX_ATTEMPTS: 10,
+    OUTBOX_LEASE_SECONDS: 120,
+    OUTBOX_RETRY_BASE_SECONDS: 30,
+    OUTBOX_RETRY_MAX_SECONDS: 3_600,
+    OPERATIONAL_JOB_LOCK_TTL_SECONDS: 240,
   };
   return {
     get: jest.fn((key: keyof AuthEnvironment) => values[key]),
