@@ -1,3 +1,4 @@
+import { createPrivateKey, createPublicKey, sign, verify } from 'node:crypto';
 import Joi from 'joi';
 
 const environmentSchema = Joi.object({
@@ -133,6 +134,46 @@ const environmentSchema = Joi.object({
     .max(60_000)
     .default(5_000),
   OUTBOX_BATCH_SIZE: Joi.number().integer().min(1).max(100).default(20),
+  MUCYORA_AUTH_ISSUER: Joi.string().uri().required(),
+  MUCYORA_AUTH_ACCESS_AUDIENCES: Joi.string().min(1).required(),
+  MUCYORA_AUTH_SIGNING_KEY_ID: Joi.string()
+    .pattern(/^[A-Za-z0-9._:-]{8,128}$/)
+    .required(),
+  MUCYORA_AUTH_SIGNING_PRIVATE_KEY: Joi.string().min(256).required(),
+  MUCYORA_AUTH_SIGNING_PUBLIC_KEY: Joi.string().min(128).required(),
+  ACCESS_TOKEN_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(300)
+    .max(1_800)
+    .default(900),
+  LIMITED_ACCESS_TOKEN_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(300)
+    .max(7_200)
+    .default(900),
+  REFRESH_TOKEN_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(86_400)
+    .max(7_776_000)
+    .default(2_592_000),
+  REFRESH_REPLAY_GRACE_SECONDS: Joi.number()
+    .integer()
+    .min(1)
+    .max(30)
+    .default(10),
+  LOGIN_LIMIT_PER_MINUTE: Joi.number().integer().min(1).max(50).default(5),
+  REFRESH_LIMIT_PER_MINUTE: Joi.number().integer().min(1).max(100).default(10),
+  LOGIN_LOCK_THRESHOLD: Joi.number().integer().min(5).max(50).default(10),
+  LOGIN_LOCK_SECONDS: Joi.number().integer().min(60).max(3_600).default(900),
+  COOKIE_DOMAIN: Joi.string().allow('').default(''),
+  COOKIE_SECURE: Joi.boolean().truthy('true').falsy('false').default(false),
+  COOKIE_SAME_SITE: Joi.string().valid('lax', 'strict', 'none').default('lax'),
+  REFRESH_COOKIE_NAME: Joi.string()
+    .pattern(/^[A-Za-z0-9_-]{1,64}$/)
+    .default('mucyora_refresh'),
+  CSRF_COOKIE_NAME: Joi.string()
+    .pattern(/^[A-Za-z0-9_-]{1,64}$/)
+    .default('mucyora_csrf'),
 }).unknown(true);
 
 export interface AuthEnvironment {
@@ -183,6 +224,24 @@ export interface AuthEnvironment {
   MAIL_PROVIDER_TIMEOUT_MS: number;
   OUTBOX_POLL_INTERVAL_MS: number;
   OUTBOX_BATCH_SIZE: number;
+  MUCYORA_AUTH_ISSUER: string;
+  MUCYORA_AUTH_ACCESS_AUDIENCES: string;
+  MUCYORA_AUTH_SIGNING_KEY_ID: string;
+  MUCYORA_AUTH_SIGNING_PRIVATE_KEY: string;
+  MUCYORA_AUTH_SIGNING_PUBLIC_KEY: string;
+  ACCESS_TOKEN_TTL_SECONDS: number;
+  LIMITED_ACCESS_TOKEN_TTL_SECONDS: number;
+  REFRESH_TOKEN_TTL_SECONDS: number;
+  REFRESH_REPLAY_GRACE_SECONDS: number;
+  LOGIN_LIMIT_PER_MINUTE: number;
+  REFRESH_LIMIT_PER_MINUTE: number;
+  LOGIN_LOCK_THRESHOLD: number;
+  LOGIN_LOCK_SECONDS: number;
+  COOKIE_DOMAIN: string;
+  COOKIE_SECURE: boolean;
+  COOKIE_SAME_SITE: 'lax' | 'strict' | 'none';
+  REFRESH_COOKIE_NAME: string;
+  CSRF_COOKIE_NAME: string;
 }
 
 export function validateEnvironment(
@@ -230,8 +289,60 @@ export function validateEnvironment(
   assertCitizenProviderUrl(environment);
   assertRedisUrl(environment);
   assertMailConfiguration(environment);
+  assertAuthSigningConfiguration(environment);
 
   return environment;
+}
+
+function assertAuthSigningConfiguration(environment: AuthEnvironment): void {
+  try {
+    const privateKey = createPrivateKey(
+      environment.MUCYORA_AUTH_SIGNING_PRIVATE_KEY,
+    );
+    const publicKey = createPublicKey(
+      environment.MUCYORA_AUTH_SIGNING_PUBLIC_KEY,
+    );
+    if (
+      privateKey.asymmetricKeyType !== 'rsa' ||
+      publicKey.asymmetricKeyType !== 'rsa'
+    ) {
+      throw new Error('RSA keys required');
+    }
+    const probe = Buffer.from('mucyora-auth-signing-key-pair-check');
+    if (
+      !verify(
+        'RSA-SHA256',
+        probe,
+        publicKey,
+        sign('RSA-SHA256', probe, privateKey),
+      )
+    ) {
+      throw new Error('Signing key pair does not match');
+    }
+    if (
+      environment.MUCYORA_AUTH_ACCESS_AUDIENCES.split(',')
+        .map((value) => value.trim())
+        .filter(Boolean).length === 0
+    ) {
+      throw new Error('Audience required');
+    }
+  } catch {
+    throw new Error(
+      'Auth environment validation failed: Auth signing keys must be valid RSA PEM keys',
+    );
+  }
+
+  if (environment.COOKIE_SAME_SITE === 'none' && !environment.COOKIE_SECURE) {
+    throw new Error(
+      'Auth environment validation failed: COOKIE_SAME_SITE=none requires COOKIE_SECURE=true',
+    );
+  }
+
+  if (environment.APP_ENV === 'production' && !environment.COOKIE_SECURE) {
+    throw new Error(
+      'Auth environment validation failed: production authentication cookies must be secure',
+    );
+  }
 }
 
 function assertMailConfiguration(environment: AuthEnvironment): void {
