@@ -11,7 +11,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiHeader,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import type { CorrelatedRequest } from '../../common/middleware/correlation-id.middleware';
@@ -23,6 +29,7 @@ import { SessionUpgradeGuard } from './session-upgrade.guard';
 import { SessionUpgradeService } from './session-upgrade.service';
 
 @ApiTags('authentication')
+@ApiBearerAuth()
 @Controller('auth/session')
 export class SessionUpgradeController {
   constructor(
@@ -34,6 +41,12 @@ export class SessionUpgradeController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(SessionUpgradeGuard)
   @ApiOperation({ summary: 'Replace a limited session with a full session' })
+  @ApiHeader({
+    name: 'idempotency-key',
+    required: true,
+    description: 'Stable retry key for one session-upgrade request.',
+    example: 'session-upgrade-kigali-0001',
+  })
   @ApiOkResponse({ type: AuthTokenResponseDto })
   async upgrade(
     @Body() input: SessionUpgradeDto,
