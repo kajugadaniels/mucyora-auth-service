@@ -10,6 +10,7 @@ This directory is the operational and engineering reference for `api/auth`.
 4. [Security](security.md)
 5. [Development rules](development-rules.md)
 6. [Git rules](git.md)
+7. [Root security policy](../SECURITY.md)
 
 ## Implementation Planning
 
