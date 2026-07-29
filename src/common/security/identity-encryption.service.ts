@@ -15,6 +15,7 @@ export type IdentityEncryptionPurpose =
   | 'rwanda-nid'
   | 'citizen-snapshot'
   | 'email-verification-token'
+  | 'password-reset-token'
   | 'registration-challenge-token'
   | 'verification-media-reference';
 
