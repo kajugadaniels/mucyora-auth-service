@@ -55,4 +55,5 @@ target identifier or assertion is included.
 - High-risk state transitions should fail closed or use an atomic outbox when
   loss of the event would remove required evidence.
 - Admin may receive reviewed read access, but Auth remains the event writer.
-- Retention and archival jobs are deferred to Phase 11.
+- Phase 11 deletes events only after the configured retention cutoff and never
+  while an active legal hold applies.
