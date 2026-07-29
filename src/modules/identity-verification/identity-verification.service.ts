@@ -461,6 +461,7 @@ export class IdentityVerificationService {
     const completed = await this.completeAttempt(
       claims,
       attemptId,
+      attempt.purpose,
       evaluation,
       context,
     );
@@ -515,6 +516,7 @@ export class IdentityVerificationService {
   private async completeAttempt(
     claims: AccessTokenClaims,
     attemptId: string,
+    purpose: VerificationPurpose,
     evaluation: EngineEvaluation,
     context: VerificationRequestContext,
   ): Promise<VerificationAttemptResponseDto> {
@@ -554,19 +556,21 @@ export class IdentityVerificationService {
           message: 'The verification result was already recorded.',
         });
       }
-      await transaction.user.update({
-        where: { id: claims.sub },
-        data: {
-          identityVerificationStatus: mapped.userStatus,
-          ...(mapped.userStatus === IdentityVerificationStatus.VERIFIED
-            ? {
-                idVerifiedAt: new Date(evaluation.evaluatedAt),
-                isIdVerified: true,
-              }
-            : {}),
-          version: { increment: 1 },
-        },
-      });
+      if (purpose === VerificationPurpose.ACCOUNT_ENROLLMENT) {
+        await transaction.user.update({
+          where: { id: claims.sub },
+          data: {
+            identityVerificationStatus: mapped.userStatus,
+            ...(mapped.userStatus === IdentityVerificationStatus.VERIFIED
+              ? {
+                  idVerifiedAt: new Date(evaluation.evaluatedAt),
+                  isIdVerified: true,
+                }
+              : {}),
+            version: { increment: 1 },
+          },
+        });
+      }
       await transaction.authSecurityEvent.create({
         data: {
           userId: claims.sub,
@@ -585,7 +589,10 @@ export class IdentityVerificationService {
           ipHash: this.digests.requestContext(context.ipAddress),
         },
       });
-      if (mapped.attemptStatus === VerificationAttemptStatus.PASSED) {
+      if (
+        mapped.attemptStatus === VerificationAttemptStatus.PASSED &&
+        purpose === VerificationPurpose.ACCOUNT_ENROLLMENT
+      ) {
         await transaction.outboxEvent.create({
           data: {
             aggregateType: 'USER',
@@ -671,6 +678,7 @@ export class IdentityVerificationService {
 
 const attemptSelect = {
   id: true,
+  purpose: true,
   status: true,
   attemptNumber: true,
   policyVersion: true,
