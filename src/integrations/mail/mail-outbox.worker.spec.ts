@@ -91,6 +91,49 @@ describe('MailOutboxWorker', () => {
       data: { lastError: 'MAIL_DELIVERY_FAILED' },
     });
   });
+
+  it('decrypts password reset tokens with a purpose-bound envelope', async () => {
+    const open = jest.fn().mockReturnValue('raw-reset-token');
+    const passwordReset = jest.fn().mockReturnValue({
+      recipient: 'user@example.com',
+      subject: 'Reset',
+      text: 'Safe',
+      html: '<p>Safe</p>',
+    });
+    const database = {
+      outboxEvent: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'outbox-reset',
+            eventType: 'PASSWORD_RESET_REQUESTED',
+            payload: {
+              recipient: 'user@example.com',
+              tokenEncrypted: 'encrypted-reset-token',
+            },
+          },
+        ]),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
+    } as unknown as DatabaseService;
+    const worker = new MailOutboxWorker(
+      database,
+      workerConfig(),
+      { open } as unknown as IdentityEncryptionService,
+      { passwordReset } as unknown as MailTemplateService,
+      { send: jest.fn().mockResolvedValue(undefined) },
+      readyRedis(),
+    );
+
+    await expect(worker.dispatchBatch()).resolves.toBe(1);
+    expect(open).toHaveBeenCalledWith(
+      'encrypted-reset-token',
+      'password-reset-token',
+    );
+    expect(passwordReset).toHaveBeenCalledWith(
+      'user@example.com',
+      'raw-reset-token',
+    );
+  });
 });
 
 function readyRedis(): Redis {
