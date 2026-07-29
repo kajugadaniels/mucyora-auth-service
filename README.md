@@ -16,8 +16,8 @@ user access tokens.
 
 ## Current Status
 
-Phase 1 of the implementation plan is complete. The service now provides a
-production-oriented NestJS foundation with:
+Phase 2 of the implementation plan is complete. In addition to the secure
+service foundation, Auth now provides:
 
 - strict startup environment validation;
 - exact-origin credentialed CORS;
@@ -28,6 +28,12 @@ production-oriented NestJS foundation with:
 - separate dependency-free liveness and database readiness routes;
 - disabled-by-default API documentation;
 - graceful shutdown, boundary checks, container packaging, and CI checks.
+- versioned identity lookup HMACs and AES-256-GCM envelopes;
+- email/NID normalization and identifier masking;
+- cryptographically random opaque tokens and keyed digests;
+- bounded idempotency support;
+- minimized durable authentication security events;
+- a generated shared database contract for future Auth workflows.
 
 Authentication, registration, NIDA, password, session, and identity-verification
 business functionality is not implemented yet. Existing domain modules remain
