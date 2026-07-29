@@ -11,7 +11,10 @@ import type { Request } from 'express';
 import { AuthEnvironment } from '../../config/environment.validation';
 
 export type StepUpConsumerService =
-  'mucyora-user' | 'mucyora-signature' | 'mucyora-auth-recovery';
+  | 'mucyora-user'
+  | 'mucyora-signature'
+  | 'mucyora-auth-recovery'
+  | 'mucyora-operations';
 
 export interface InternalServiceRequest extends Request {
   internalService: StepUpConsumerService;
@@ -48,6 +51,10 @@ export class InternalServiceGuard implements CanActivate {
         });
       case 'mucyora-auth-recovery':
         return this.config.get('MUCYORA_AUTH_RECOVERY_SERVICE_KEY', {
+          infer: true,
+        });
+      case 'mucyora-operations':
+        return this.config.get('MUCYORA_OPERATIONS_SERVICE_KEY', {
           infer: true,
         });
       default:
