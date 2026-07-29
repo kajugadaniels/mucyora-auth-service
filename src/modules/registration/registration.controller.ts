@@ -46,6 +46,7 @@ export class RegistrationController {
     name: 'idempotency-key',
     required: true,
     description: 'Unique key for safely replaying this registration request',
+    example: 'registration-kigali-20260730-0001',
   })
   @ApiCreatedResponse({ type: RegistrationResponseDto })
   register(
@@ -80,6 +81,7 @@ export class RegistrationController {
     name: 'x-client-instance-id',
     required: true,
     description: 'Stable non-secret client instance identifier',
+    example: 'android-kigali-0001',
   })
   @ApiCreatedResponse({ type: CitizenLookupResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid lookup request' })
