@@ -202,6 +202,18 @@ an approved disposable branch containing synthetic data. Local microbenchmarks
 and soak checks are capacity evidence, not permission to weaken Argon2, replay
 protection, distributed coordination, or failure-closed behavior.
 
+Phase 13 release candidates must pass API-contract, database-boundary,
+dependency, secret, and container checks and produce a CycloneDX SBOM. JWT key
+rotation publishes bounded verification-only overlap keys so in-flight access
+tokens survive controlled rotation without retaining old private material.
+Production approval additionally requires external evidence for IAM, private
+TLS networking, restore and credential-rotation drills, alert delivery,
+staging load/soak results, and independent penetration review.
+
+Deployment uses an immutable image digest, non-root identity, read-only
+filesystem, dropped Linux capabilities, bounded resources, health probes, and
+staged promotion. Codex does not deploy automatically.
+
 ## Database Safety
 
 Auth imports database behavior only from `@mucyora/db`. This repository must
