@@ -6,12 +6,13 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { RWANDA_OPENAPI_EXAMPLES } from '../../../common/openapi/auth-openapi';
 
 export class CitizenLookupDto {
   @ApiProperty({
     description:
       'Rwanda National ID as a string; spaces and hyphens are normalized',
-    example: '1000000000000001',
+    example: RWANDA_OPENAPI_EXAMPLES.nid,
   })
   @IsString()
   @MinLength(16)
@@ -23,7 +24,7 @@ export class CitizenLookupDto {
 
   @ApiProperty({
     description: 'Email address bound to the registration challenge',
-    example: 'user@example.com',
+    example: RWANDA_OPENAPI_EXAMPLES.email,
     maxLength: 320,
   })
   @IsString()
@@ -33,19 +34,22 @@ export class CitizenLookupDto {
 }
 
 export class CitizenPreviewDto {
-  @ApiProperty()
+  @ApiProperty({ example: RWANDA_OPENAPI_EXAMPLES.surname })
   surname!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: RWANDA_OPENAPI_EXAMPLES.givenNames })
   givenNames!: string;
 
-  @ApiProperty({ format: 'date' })
+  @ApiProperty({
+    format: 'date',
+    example: RWANDA_OPENAPI_EXAMPLES.dateOfBirth,
+  })
   dateOfBirth!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Rwandan' })
   nationality!: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'F' })
   sex!: string;
 }
 
@@ -53,10 +57,11 @@ export class CitizenLookupResponseDto {
   @ApiProperty({
     description:
       'Opaque, short-lived token required by the registration submission',
+    example: RWANDA_OPENAPI_EXAMPLES.opaqueToken,
   })
   registrationChallengeToken!: string;
 
-  @ApiProperty({ format: 'date-time' })
+  @ApiProperty({ format: 'date-time', example: '2026-07-30T10:10:00.000Z' })
   expiresAt!: string;
 
   @ApiProperty({ type: CitizenPreviewDto })
