@@ -206,7 +206,7 @@ No reference credential, token, identity value, or secret was copied.
 | 2 | Consume approved DB contract and add crypto/security primitives | `@mucyora/db` factory | Requires separately authorized `api/db` migration work |
 | 3 | Typed NIDA adapter, minimized mapping, resilience and mock tests | Registration module shell | Distributed cache and safe secret configuration |
 | 4 | Citizen lookup and registration challenge | Complete | Protected endpoint, encrypted short-lived challenge, distributed abuse controls, and anti-enumeration |
-| 5 | Atomic registration and email verification | Registration shell, Argon2 dependency | Credentials, consent, tokens, outbox schema |
+| 5 | Atomic registration and email verification | Complete | Argon2id credential, encrypted identity, versioned consents, digest tokens, outbox mail, verification and resend |
 | 6 | Login, asymmetric JWT/JWKS, refresh/session management | Auth and sessions shells | Consumer migration from shared JWT secret |
 | 7 | Password recovery/change | Password shell | Password reset/session revocation contract |
 | 8 | Attempt-bound biometric verification | Identity-verification shell, Engine service | Hardened Engine/liveness and media contracts |
