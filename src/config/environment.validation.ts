@@ -95,6 +95,44 @@ const environmentSchema = Joi.object({
     .min(1)
     .max(10)
     .default(3),
+  PASSWORD_ARGON2_MEMORY_KIB: Joi.number()
+    .integer()
+    .min(32_768)
+    .max(262_144)
+    .default(65_536),
+  PASSWORD_ARGON2_TIME_COST: Joi.number().integer().min(2).max(10).default(3),
+  PASSWORD_ARGON2_PARALLELISM: Joi.number().integer().min(1).max(4).default(1),
+  PASSWORD_HASH_MAX_CONCURRENCY: Joi.number()
+    .integer()
+    .min(1)
+    .max(16)
+    .default(4),
+  EMAIL_TOKEN_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(900)
+    .max(172_800)
+    .default(86_400),
+  REGISTRATION_LIMIT_PER_HOUR: Joi.number().integer().min(1).max(20).default(3),
+  EMAIL_RESEND_LIMIT_PER_HOUR: Joi.number().integer().min(1).max(20).default(3),
+  MAIL_OUTBOX_WORKER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+  MAIL_PROVIDER_URL: Joi.string().allow('').default(''),
+  MAIL_FROM: Joi.string().email().allow('').default(''),
+  MAIL_API_KEY: Joi.string().allow('').default(''),
+  MUCYORA_USER_APP_URL: Joi.string().uri().default('http://localhost:4000'),
+  MAIL_PROVIDER_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(500)
+    .max(30_000)
+    .default(5_000),
+  OUTBOX_POLL_INTERVAL_MS: Joi.number()
+    .integer()
+    .min(1_000)
+    .max(60_000)
+    .default(5_000),
+  OUTBOX_BATCH_SIZE: Joi.number().integer().min(1).max(100).default(20),
 }).unknown(true);
 
 export interface AuthEnvironment {
@@ -130,6 +168,21 @@ export interface AuthEnvironment {
   CITIZEN_LOOKUP_NID_LIMIT_PER_MINUTE: number;
   REGISTRATION_CHALLENGE_TTL_SECONDS: number;
   REGISTRATION_CHALLENGE_MAX_ATTEMPTS: number;
+  PASSWORD_ARGON2_MEMORY_KIB: number;
+  PASSWORD_ARGON2_TIME_COST: number;
+  PASSWORD_ARGON2_PARALLELISM: number;
+  PASSWORD_HASH_MAX_CONCURRENCY: number;
+  EMAIL_TOKEN_TTL_SECONDS: number;
+  REGISTRATION_LIMIT_PER_HOUR: number;
+  EMAIL_RESEND_LIMIT_PER_HOUR: number;
+  MAIL_OUTBOX_WORKER_ENABLED: boolean;
+  MAIL_PROVIDER_URL: string;
+  MAIL_FROM: string;
+  MAIL_API_KEY: string;
+  MUCYORA_USER_APP_URL: string;
+  MAIL_PROVIDER_TIMEOUT_MS: number;
+  OUTBOX_POLL_INTERVAL_MS: number;
+  OUTBOX_BATCH_SIZE: number;
 }
 
 export function validateEnvironment(
@@ -176,8 +229,71 @@ export function validateEnvironment(
   assertEncodedKeys(environment);
   assertCitizenProviderUrl(environment);
   assertRedisUrl(environment);
+  assertMailConfiguration(environment);
 
   return environment;
+}
+
+function assertMailConfiguration(environment: AuthEnvironment): void {
+  const applicationUrl = new URL(environment.MUCYORA_USER_APP_URL);
+  if (
+    !['https:', 'http:'].includes(applicationUrl.protocol) ||
+    applicationUrl.username ||
+    applicationUrl.password ||
+    applicationUrl.search ||
+    applicationUrl.hash ||
+    (environment.APP_ENV === 'production' &&
+      applicationUrl.protocol !== 'https:')
+  ) {
+    throw new Error(
+      'Auth environment validation failed: MUCYORA_USER_APP_URL must be a fixed HTTPS origin in production',
+    );
+  }
+
+  if (!environment.MAIL_OUTBOX_WORKER_ENABLED) {
+    return;
+  }
+
+  if (
+    !environment.MAIL_PROVIDER_URL ||
+    !environment.MAIL_FROM ||
+    environment.MAIL_API_KEY.length < 16
+  ) {
+    throw new Error(
+      'Auth environment validation failed: enabled mail worker requires MAIL_PROVIDER_URL, MAIL_FROM, and a MAIL_API_KEY of at least 16 characters',
+    );
+  }
+
+  const providerUrl = new URL(environment.MAIL_PROVIDER_URL);
+  if (
+    providerUrl.username ||
+    providerUrl.password ||
+    providerUrl.search ||
+    providerUrl.hash ||
+    !['https:', 'http:'].includes(providerUrl.protocol)
+  ) {
+    throw new Error(
+      'Auth environment validation failed: MAIL_PROVIDER_URL must be a fixed HTTP(S) URL without credentials, query, or fragment',
+    );
+  }
+
+  if (
+    environment.APP_ENV === 'production' &&
+    providerUrl.protocol !== 'https:'
+  ) {
+    throw new Error(
+      'Auth environment validation failed: production MAIL_PROVIDER_URL must use HTTPS',
+    );
+  }
+
+  if (
+    providerUrl.protocol === 'http:' &&
+    !['localhost', '127.0.0.1', '::1'].includes(providerUrl.hostname)
+  ) {
+    throw new Error(
+      'Auth environment validation failed: insecure MAIL_PROVIDER_URL is allowed only for a local test provider',
+    );
+  }
 }
 
 function assertCitizenProviderUrl(environment: AuthEnvironment): void {
