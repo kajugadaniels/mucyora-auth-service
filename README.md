@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 3 of the implementation plan is complete. In addition to the secure
+Phase 4 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -40,10 +40,15 @@ service foundation, Auth now provides:
 - bounded timeouts, retries, backoff, and circuit breaking;
 - encrypted Redis positive caching with HMAC-derived keys;
 - duplicate in-flight lookup suppression and privacy-safe metrics.
+- a protected citizen registration-initiation endpoint;
+- Redis-backed IP, client-instance, and NID-HMAC rate limits;
+- encrypted, expiring, attempt-bounded registration challenges;
+- atomic single-use challenge lifecycle operations;
+- generic anti-enumeration errors and challenge audit events.
 
-Authentication, registration, public citizen lookup, password, session, and
-identity-verification business functionality is not implemented yet. Existing
-domain modules remain ownership shells.
+Account creation, authentication, password, session, and
+identity-verification business functionality is not implemented yet. A Phase
+4 challenge does not create a user.
 
 ## Service Boundary
 
@@ -80,8 +85,9 @@ environment variables.
 |---|---|---|
 | `GET` | `/health/live` | Process liveness without database or external calls |
 | `GET` | `/health/ready` | Cached database readiness |
+| `POST` | `/api/v1/registration/citizen/lookup` | Create an opaque, short-lived registration challenge |
 
-Application APIs will be mounted below `/api/v1` in their separately
+Later application APIs will be mounted below `/api/v1` in their separately
 authorized phases.
 
 ## Setup
@@ -159,6 +165,6 @@ documentation rules.
 ## Production Readiness
 
 The foundation is not a production-ready authentication product by itself.
-Later phases must still implement public registration contracts, distributed
-rate limiting, registration, sessions, recovery, verification, outbox
-processing, load testing, and release security gates.
+Later phases must still implement atomic account registration, email
+verification, sessions, recovery, identity verification, outbox processing,
+load testing, and release security gates.
