@@ -40,6 +40,7 @@ describe('environment validation', () => {
       'test-signature-service-key-at-least-thirty-two',
     MUCYORA_AUTH_RECOVERY_SERVICE_KEY:
       'test-auth-recovery-key-at-least-thirty-two',
+    MUCYORA_OPERATIONS_SERVICE_KEY: 'test-operations-key-at-least-thirty-two',
   };
 
   it('applies safe defaults', () => {
@@ -53,6 +54,8 @@ describe('environment validation', () => {
     expect(environment.SESSION_UPGRADE_IDEMPOTENCY_TTL_SECONDS).toBe(900);
     expect(environment.STEP_UP_CHALLENGE_TTL_SECONDS).toBe(600);
     expect(environment.STEP_UP_ASSERTION_TTL_SECONDS).toBe(300);
+    expect(environment.OPERATIONAL_JOB_BATCH_SIZE).toBe(50);
+    expect(environment.SECURITY_EVENT_RETENTION_DAYS).toBe(365);
   });
 
   it('rejects wildcard CORS origins', () => {
