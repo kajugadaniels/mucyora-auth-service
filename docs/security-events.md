@@ -42,8 +42,10 @@ The Phase 2 contract reserves events for:
 - identity-verification start and completion;
 - rate-limit enforcement.
 
-Later phases will write these events when their workflows are implemented.
-Phase 2 does not claim that those workflows exist.
+Implemented workflows write these events atomically where the state transition
+requires durable evidence. Step-up challenges reuse identity-verification
+start/completion event types with bounded purpose-specific reason codes; no
+target identifier or assertion is included.
 
 ## Operational Rules
 
@@ -54,4 +56,3 @@ Phase 2 does not claim that those workflows exist.
   loss of the event would remove required evidence.
 - Admin may receive reviewed read access, but Auth remains the event writer.
 - Retention and archival jobs are deferred to Phase 11.
-
