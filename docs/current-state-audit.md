@@ -205,7 +205,7 @@ No reference credential, token, identity value, or secret was copied.
 | 1 | Secure Nest foundation, probes, boundary checks, DB lifecycle, CI/docs | Fixed port, packages, module shells | Do not add business endpoints |
 | 2 | Consume approved DB contract and add crypto/security primitives | `@mucyora/db` factory | Requires separately authorized `api/db` migration work |
 | 3 | Typed NIDA adapter, minimized mapping, resilience and mock tests | Registration module shell | Distributed cache and safe secret configuration |
-| 4 | Citizen lookup and registration challenge | Phase 3 adapter | RegistrationChallenge schema and anti-enumeration |
+| 4 | Citizen lookup and registration challenge | Complete | Protected endpoint, encrypted short-lived challenge, distributed abuse controls, and anti-enumeration |
 | 5 | Atomic registration and email verification | Registration shell, Argon2 dependency | Credentials, consent, tokens, outbox schema |
 | 6 | Login, asymmetric JWT/JWKS, refresh/session management | Auth and sessions shells | Consumer migration from shared JWT secret |
 | 7 | Password recovery/change | Password shell | Password reset/session revocation contract |
@@ -222,4 +222,3 @@ Phase 1 may proceed only after a new explicit command. Phases 2 and 3 remain
 blocked by the command-gated protocol even if they were named in the same
 multi-phase request. Database migration design and execution require separate,
 explicit authorization within the owning `api/db` project.
-
