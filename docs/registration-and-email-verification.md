@@ -90,6 +90,10 @@ The worker:
 
 - reads a bounded batch using the unpublished index;
 - acquires a per-event Redis lock across replicas;
+- claims a database processing lease and sends the event ID as the provider
+  idempotency key;
+- retries with bounded exponential backoff and explicitly dead-letters events
+  after the configured maximum attempts;
 - sends through the fixed, redirect-disabled mail-provider adapter;
 - marks the event published only after success;
 - stores only `MAIL_DELIVERY_FAILED` on failure;
