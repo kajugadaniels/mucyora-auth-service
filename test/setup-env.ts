@@ -45,6 +45,7 @@ process.env.MUCYORA_AUTH_ACCESS_AUDIENCES = 'mucyora-user,mucyora-signature';
 process.env.MUCYORA_AUTH_SIGNING_KEY_ID = 'test-key-2026';
 process.env.MUCYORA_AUTH_SIGNING_PRIVATE_KEY = testSigningKeys.privateKey;
 process.env.MUCYORA_AUTH_SIGNING_PUBLIC_KEY = testSigningKeys.publicKey;
+process.env.MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON = '[]';
 process.env.ACCESS_TOKEN_TTL_SECONDS = '900';
 process.env.LIMITED_ACCESS_TOKEN_TTL_SECONDS = '900';
 process.env.REFRESH_TOKEN_TTL_SECONDS = '2592000';
