@@ -1,0 +1,21 @@
+# Authentication Service Documentation
+
+This directory is the operational and engineering reference for `api/auth`.
+
+## Reading Order
+
+1. [Architecture and boundaries](architecture-and-boundaries.md)
+2. [Configuration and operations](configuration-and-operations.md)
+3. [Database access](database-access.md)
+4. [Security](security.md)
+5. [Development rules](development-rules.md)
+
+## Documentation Rules
+
+- Describe implemented behavior separately from planned behavior.
+- Update configuration documentation with every environment-variable change.
+- Update database documentation with every query or table-access change.
+- Update security documentation with every credential, token, identity, or
+  internal-service contract change.
+- Never include real credentials, tokens, identity values, or connection
+  strings.
