@@ -55,6 +55,24 @@ MUCYORA_USER_APP_URL=http://localhost:4000
 MAIL_PROVIDER_TIMEOUT_MS=5000
 OUTBOX_POLL_INTERVAL_MS=5000
 OUTBOX_BATCH_SIZE=20
+MUCYORA_AUTH_ISSUER=http://localhost:3000
+MUCYORA_AUTH_ACCESS_AUDIENCES=mucyora-user,mucyora-signature
+MUCYORA_AUTH_SIGNING_KEY_ID=
+MUCYORA_AUTH_SIGNING_PRIVATE_KEY=
+MUCYORA_AUTH_SIGNING_PUBLIC_KEY=
+ACCESS_TOKEN_TTL_SECONDS=900
+LIMITED_ACCESS_TOKEN_TTL_SECONDS=900
+REFRESH_TOKEN_TTL_SECONDS=2592000
+REFRESH_REPLAY_GRACE_SECONDS=10
+LOGIN_LIMIT_PER_MINUTE=5
+REFRESH_LIMIT_PER_MINUTE=10
+LOGIN_LOCK_THRESHOLD=10
+LOGIN_LOCK_SECONDS=900
+COOKIE_DOMAIN=
+COOKIE_SECURE=false
+COOKIE_SAME_SITE=lax
+REFRESH_COOKIE_NAME=mucyora_refresh
+CSRF_COOKIE_NAME=mucyora_csrf
 ```
 
 Future variables must be added to `.env.example` in the same change that adds
@@ -87,6 +105,10 @@ their runtime validation.
 - Registration and resend hourly limits are bounded to 1–20.
 - Enabling the mail worker requires a fixed provider URL, sender address, and
   an API key of at least 16 characters. Production mail requires HTTPS.
+- Signing keys must be a matching RSA PEM pair and have a stable key ID.
+- Access, limited-access, refresh, replay-grace, login, refresh, and lock
+  settings are bounded at startup.
+- Production requires secure authentication cookies.
 
 The port is deliberately absent because the service always uses port `3000`.
 
@@ -164,6 +186,11 @@ The mail worker is disabled by default. Enable it only after configuring the
 approved provider and Redis. It polls bounded unpublished batches and records
 safe failure codes. See
 [Registration and email verification](registration-and-email-verification.md).
+
+Signing private keys belong only in Auth secret management. Consumers use the
+cacheable public JWKS and must validate issuer, audience, algorithm, key ID,
+expiry, and session-level authorization. See
+[Authentication and sessions](authentication-and-sessions.md).
 
 ## Security Benchmark
 
