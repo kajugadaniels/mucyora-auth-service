@@ -21,6 +21,7 @@ This directory is the operational and engineering reference for `api/auth`.
 15. [Account identity verification](identity-verification.md)
 16. [Step-up identity verification](step-up-verification.md)
 17. [Operational jobs](operational-jobs.md)
+18. [Performance validation](performance-validation.md)
 
 ## Implementation Planning
 
