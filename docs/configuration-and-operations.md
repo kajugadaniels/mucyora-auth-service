@@ -35,6 +35,11 @@ CITIZEN_API_MAX_RETRIES=2
 CITIZEN_CACHE_TTL_SECONDS=300
 CITIZEN_CIRCUIT_FAILURE_THRESHOLD=5
 CITIZEN_CIRCUIT_RESET_TIMEOUT_MS=30000
+CITIZEN_LOOKUP_IP_LIMIT_PER_MINUTE=5
+CITIZEN_LOOKUP_CLIENT_LIMIT_PER_MINUTE=5
+CITIZEN_LOOKUP_NID_LIMIT_PER_MINUTE=3
+REGISTRATION_CHALLENGE_TTL_SECONDS=600
+REGISTRATION_CHALLENGE_MAX_ATTEMPTS=3
 ```
 
 Future variables must be added to `.env.example` in the same change that adds
@@ -60,6 +65,8 @@ their runtime validation.
   only for a provider bound to localhost in development or tests.
 - Citizen-provider timeouts, retry count, cache TTL, circuit threshold, and
   reset interval are bounded at startup.
+- Citizen lookup limits are positive integers bounded to 100 per minute.
+- Registration challenges expire within 2–15 minutes and allow 1–10 attempts.
 
 The port is deliberately absent because the service always uses port `3000`.
 
@@ -128,6 +135,10 @@ credentials in `CITIZEN_API_URL`, logs, documentation, or support messages.
 
 See [Citizen provider integration](citizen-provider-integration.md) for the
 request, caching, failure, and testing contracts.
+
+The public Phase 4 route uses Redis as a mandatory distributed abuse-control
+dependency and fails closed when rate-limit state is unavailable. See
+[Citizen lookup and registration challenges](registration-challenges.md).
 
 ## Security Benchmark
 
