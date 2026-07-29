@@ -78,7 +78,12 @@ export class MailOutboxWorker
           publishedAt: null,
           attemptCount: { lt: 10 },
           eventType: {
-            in: ['EMAIL_VERIFICATION_REQUESTED', 'WELCOME_NEXT_STEP'],
+            in: [
+              'EMAIL_VERIFICATION_REQUESTED',
+              'WELCOME_NEXT_STEP',
+              'PASSWORD_RESET_REQUESTED',
+              'PASSWORD_CHANGED_NOTIFICATION',
+            ],
           },
         },
         orderBy: { createdAt: 'asc' },
@@ -134,16 +139,7 @@ export class MailOutboxWorker
         recipient: string;
         tokenEncrypted?: string;
       };
-      const message =
-        event.eventType === 'EMAIL_VERIFICATION_REQUESTED'
-          ? this.templates.emailVerification(
-              payload.recipient,
-              this.encryption.open(
-                payload.tokenEncrypted ?? '',
-                'email-verification-token',
-              ),
-            )
-          : this.templates.welcome(payload.recipient);
+      const message = this.messageFor(event.eventType, payload);
 
       await this.mailProvider.send(message);
       await this.database.outboxEvent.updateMany({
@@ -167,5 +163,33 @@ export class MailOutboxWorker
     } finally {
       await this.redis.eval(RELEASE_LOCK_SCRIPT, 1, lockKey, lockValue);
     }
+  }
+
+  private messageFor(
+    eventType: string,
+    payload: { recipient: string; tokenEncrypted?: string },
+  ) {
+    if (eventType === 'EMAIL_VERIFICATION_REQUESTED') {
+      return this.templates.emailVerification(
+        payload.recipient,
+        this.encryption.open(
+          payload.tokenEncrypted ?? '',
+          'email-verification-token',
+        ),
+      );
+    }
+    if (eventType === 'PASSWORD_RESET_REQUESTED') {
+      return this.templates.passwordReset(
+        payload.recipient,
+        this.encryption.open(
+          payload.tokenEncrypted ?? '',
+          'password-reset-token',
+        ),
+      );
+    }
+    if (eventType === 'PASSWORD_CHANGED_NOTIFICATION') {
+      return this.templates.passwordChanged(payload.recipient);
+    }
+    return this.templates.welcome(payload.recipient);
   }
 }
