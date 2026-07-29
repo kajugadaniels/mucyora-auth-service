@@ -11,7 +11,16 @@ import { HealthModule } from './modules/health/health.module';
 import { CommonModule } from './common/common.module';
 
 @Module({
-  imports: [AuthModule, RegistrationModule, IdentityVerificationModule, SessionsModule, PasswordModule, OtpModule, HealthModule, CommonModule],
+  imports: [
+    AuthModule,
+    RegistrationModule,
+    IdentityVerificationModule,
+    SessionsModule,
+    PasswordModule,
+    OtpModule,
+    HealthModule,
+    CommonModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
