@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 5 of the implementation plan is complete. In addition to the secure
+Phase 6 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -51,9 +51,16 @@ service foundation, Auth now provides:
 - digest-only, single-use email verification tokens;
 - generic, distributed-rate-limited email resend;
 - encrypted-token outbox events and asynchronous mail dispatch.
+- generic Argon2id login with distributed abuse limits;
+- limited and full database-backed sessions;
+- minimized RS256 access tokens and cacheable public JWKS;
+- digest-only opaque refresh tokens with atomic generation rotation;
+- distributed refresh coordination and family reuse detection;
+- secure cookie/CSRF and explicit native compatibility transports;
+- logout, logout-all, bounded session listing, and owned revocation.
 
-Login, sessions, access tokens, password recovery/change, and biometric
-identity-verification business functionality is not implemented yet.
+Password recovery/change, biometric identity verification, and session upgrade
+business functionality is not implemented yet.
 
 ## Service Boundary
 
@@ -86,14 +93,21 @@ environment variables.
 
 ## Implemented Endpoints
 
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/health/live` | Process liveness without database or external calls |
-| `GET` | `/health/ready` | Cached database readiness |
-| `POST` | `/api/v1/registration/citizen/lookup` | Create an opaque, short-lived registration challenge |
-| `POST` | `/api/v1/registration` | Atomically create a pending account |
-| `POST` | `/api/v1/registration/email/verify` | Consume an email-verification token |
-| `POST` | `/api/v1/registration/email/resend` | Request a generic verification resend |
+| Method   | Path                                  | Purpose                                              |
+| -------- | ------------------------------------- | ---------------------------------------------------- |
+| `GET`    | `/health/live`                        | Process liveness without database or external calls  |
+| `GET`    | `/health/ready`                       | Cached database readiness                            |
+| `POST`   | `/api/v1/registration/citizen/lookup` | Create an opaque, short-lived registration challenge |
+| `POST`   | `/api/v1/registration`                | Atomically create a pending account                  |
+| `POST`   | `/api/v1/registration/email/verify`   | Consume an email-verification token                  |
+| `POST`   | `/api/v1/registration/email/resend`   | Request a generic verification resend                |
+| `POST`   | `/api/v1/auth/login`                  | Create a limited or full session                     |
+| `POST`   | `/api/v1/auth/refresh`                | Atomically rotate refresh credentials                |
+| `POST`   | `/api/v1/auth/logout`                 | Revoke the current session                           |
+| `POST`   | `/api/v1/auth/logout-all`             | Revoke all owned sessions                            |
+| `GET`    | `/api/v1/auth/sessions`               | List active owned sessions                           |
+| `DELETE` | `/api/v1/auth/sessions/:sessionId`    | Revoke one owned session                             |
+| `GET`    | `/.well-known/jwks.json`              | Return public access-token verification keys         |
 
 Later application APIs will be mounted below `/api/v1` in their separately
 authorized phases.
@@ -112,18 +126,18 @@ The shared Prisma client must already be generated and built in `api/db`.
 
 ## Commands
 
-| Command | Purpose |
-|---|---|
-| `npm run start:dev` | Run in watch mode on port 3000 |
-| `npm run check` | Run boundary, lint, build, unit, and e2e checks |
+| Command                  | Purpose                                            |
+| ------------------------ | -------------------------------------------------- |
+| `npm run start:dev`      | Run in watch mode on port 3000                     |
+| `npm run check`          | Run boundary, lint, build, unit, and e2e checks    |
 | `npm run check:boundary` | Reject forbidden Prisma and cross-domain ownership |
-| `npm run build` | Compile the service |
-| `npm run start:prod` | Run compiled output |
-| `npm run test` | Run unit tests |
-| `npm run test:e2e` | Run end-to-end tests |
-| `npm run test:cov` | Run tests with coverage |
-| `npm run lint` | Check and fix lint findings |
-| `npm run format` | Format TypeScript files |
+| `npm run build`          | Compile the service                                |
+| `npm run start:prod`     | Run compiled output                                |
+| `npm run test`           | Run unit tests                                     |
+| `npm run test:e2e`       | Run end-to-end tests                               |
+| `npm run test:cov`       | Run tests with coverage                            |
+| `npm run lint`           | Check and fix lint findings                        |
+| `npm run format`         | Format TypeScript files                            |
 
 ## Database Rules
 
@@ -149,8 +163,8 @@ The shared Prisma client must already be generated and built in `api/db`.
 - Never expose or persist a raw provider response; cache only the minimized,
   encrypted positive result.
 
-Credential hashing, workflow token storage, distributed rate limiting, and
-registration challenges remain requirements for later phases.
+Password recovery, biometric identity verification, and limited-to-full
+session upgrade remain requirements for later phases.
 
 ## Container Build
 
@@ -173,6 +187,6 @@ documentation rules.
 ## Production Readiness
 
 The foundation is not a production-ready authentication product by itself.
-Later phases must still implement login, sessions, token rotation, password
-recovery, biometric identity verification, operational cleanup, load testing,
-and release security gates.
+Later phases must still implement password recovery/change, biometric identity
+verification, limited-to-full upgrade, operational cleanup, load testing, and
+release security gates.
