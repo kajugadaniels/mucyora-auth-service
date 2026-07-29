@@ -102,6 +102,20 @@ identity providers without authorization, or publish an unpatched issue.
   outstanding recovery request for the user.
 - Password reset links are encrypted with a purpose-bound envelope in the
   outbox, and password-change notifications are delivered asynchronously.
+- Identity-verification attempts require active NIDA linkage, verified email,
+  an eligible account, biometric consent, and rolling-window capacity.
+- Verification media uses short-lived attempt-bound S3 policies with fixed
+  checksum, type, dimension metadata, size range, and random object names.
+- Stored verification object references use purpose-bound encryption and are
+  deleted after terminal outcomes or by bounded reconciliation.
+- Engine requests are authenticated with caller/audience-bound HMAC signatures,
+  timestamp, nonce, and body digest; Engine rejects nonce replay through Redis.
+- Engine receives attempt-bound object and provider-liveness references, never
+  a raw or encrypted NID.
+- AWS Face Liveness is authoritative; still-image quality heuristics are not
+  accepted as proof of liveness.
+- Provider outages remain explicit unavailable outcomes and are never converted
+  into identity mismatch decisions.
 
 ## Sensitive Data
 
@@ -134,6 +148,9 @@ credentials and account gates.
 
 Phase 7 implements password recovery and authenticated password change. It
 does not implement biometric verification or limited-to-full session upgrade.
+
+Phase 8 implements account-enrollment identity verification and marks a user
+verified on pass. It does not upgrade or replace the caller’s limited session.
 
 ## Database Safety
 
