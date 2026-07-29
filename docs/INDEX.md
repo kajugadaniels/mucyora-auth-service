@@ -14,6 +14,7 @@ This directory is the operational and engineering reference for `api/auth`.
 8. [Identity data protection](identity-data-protection.md)
 9. [Authentication security events](security-events.md)
 10. [Citizen provider integration](citizen-provider-integration.md)
+11. [Citizen lookup and registration challenges](registration-challenges.md)
 
 ## Implementation Planning
 
