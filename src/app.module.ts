@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { PerformanceTelemetryMiddleware } from './common/middleware/performance-telemetry.middleware';
 import { CommonModule } from './common/common.module';
 import { validateEnvironment } from './config/environment.validation';
 import { IntegrationsModule } from './integrations/integrations.module';
@@ -50,7 +51,7 @@ import { OperationsModule } from './modules/operations/operations.module';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer
-      .apply(CorrelationIdMiddleware)
+      .apply(CorrelationIdMiddleware, PerformanceTelemetryMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
