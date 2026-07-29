@@ -9,5 +9,6 @@ import { StepUpVerificationService } from './step-up-verification.service';
   imports: [AuthModule],
   controllers: [StepUpVerificationController, InternalStepUpController],
   providers: [StepUpVerificationService, InternalServiceGuard],
+  exports: [InternalServiceGuard],
 })
 export class StepUpVerificationModule {}
