@@ -54,6 +54,7 @@ The shared schema now defines:
 - `PasswordResetRequest`;
 - `AuthSession` and generation-based refresh-token fields;
 - `IdentityVerificationAttempt` and `VerificationMedia`;
+- `StepUpChallenge`;
 - `UserConsent`;
 - `AuthSecurityEvent`;
 - `IdempotencyRecord`;
@@ -63,7 +64,7 @@ Legacy fields and tables remain temporarily for compatible rollout. New Auth
 code must use the Phase 2 fields and must not write new plaintext or ordinary
 hash identity representations.
 
-The migration exists in `api/db` but is not applied by this project.
+The migrations exist in `api/db` but are not applied by this project.
 
 ## Bounded Access
 
@@ -72,3 +73,7 @@ The migration exists in `api/db` but is not applied by this project.
 - Completion uses a conditional single-record update.
 - Security-event writes select only the created identifier.
 - Cleanup and bulk polling are deferred until their indexed Phase 11 jobs.
+- Step-up target lookup uses the compound user, purpose, target-digest, status,
+  and expiry index.
+- Assertion consumption uses its unique digest followed by one conditional
+  status update.
