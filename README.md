@@ -16,7 +16,7 @@ user access tokens.
 
 ## Current Status
 
-Phase 8 of the implementation plan is complete. In addition to the secure
+Phase 9 of the implementation plan is complete. In addition to the secure
 service foundation, Auth now provides:
 
 - strict startup environment validation;
@@ -69,8 +69,10 @@ service foundation, Auth now provides:
 - signed and replay-resistant MUCYORA Engine requests;
 - normalized pass, fail, retry, review, and provider-unavailable states;
 - bounded attempt windows, retry deadlines, and media reconciliation.
-
-Limited-to-full session-upgrade business functionality is not implemented yet.
+- atomic, idempotent limited-to-full session replacement;
+- verification-attempt ownership and enrollment-purpose enforcement;
+- limited-family refresh revocation before full credential issuance;
+- cookie and native upgrade transports with encrypted replay results.
 
 ## Service Boundary
 
@@ -113,6 +115,7 @@ environment variables.
 | `POST`   | `/api/v1/registration/email/resend`                                  | Request a generic verification resend                |
 | `POST`   | `/api/v1/auth/login`                                                 | Create a limited or full session                     |
 | `POST`   | `/api/v1/auth/refresh`                                               | Atomically rotate refresh credentials                |
+| `POST`   | `/api/v1/auth/session/upgrade`                                       | Replace a verified limited session with a full one   |
 | `POST`   | `/api/v1/auth/logout`                                                | Revoke the current session                           |
 | `POST`   | `/api/v1/auth/logout-all`                                            | Revoke all owned sessions                            |
 | `GET`    | `/api/v1/auth/sessions`                                              | List active owned sessions                           |
@@ -183,7 +186,8 @@ The shared Prisma client must already be generated and built in `api/db`.
 - Never expose or persist a raw provider response; cache only the minimized,
   encrypted positive result.
 
-Limited-to-full session upgrade remains a requirement for Phase 9.
+Session-upgrade idempotency records expire after a short configurable window;
+their credential result is encrypted with purpose-bound AES-GCM.
 
 ## Container Build
 
@@ -206,5 +210,5 @@ documentation rules.
 ## Production Readiness
 
 The service is not yet a production-ready authentication product. Later phases
-must still implement limited-to-full upgrade, operational cleanup, load
-testing, and release security gates.
+must still implement step-up verification, operational cleanup, load testing,
+and release security gates.
