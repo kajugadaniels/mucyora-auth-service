@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import {
   Inject,
   Injectable,
@@ -6,25 +5,16 @@ import {
   OnApplicationShutdown,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type Redis from 'ioredis';
 import Joi from 'joi';
 
 import { DatabaseService } from '../../common/database/database.service';
+import { DistributedJobLockService } from '../../common/operations/distributed-job-lock.service';
 import { IdentityEncryptionService } from '../../common/security/identity-encryption.service';
 import { AuthEnvironment } from '../../config/environment.validation';
-import { ensureRedisConnected } from '../redis/redis-connection';
-import { REDIS_CLIENT } from '../redis/redis.module';
 import { MAIL_PROVIDER } from './mail-provider';
 import type { MailProvider } from './mail-provider';
 import { MailTemplateService } from './mail-template.service';
 
-const LOCK_TTL_SECONDS = 60;
-const RELEASE_LOCK_SCRIPT = `
-if redis.call('GET', KEYS[1]) == ARGV[1] then
-  return redis.call('DEL', KEYS[1])
-end
-return 0
-`;
 const payloadSchema = Joi.object({
   recipient: Joi.string().email().required(),
   tokenEncrypted: Joi.string().max(4_096),
@@ -34,7 +24,7 @@ const payloadSchema = Joi.object({
 export class MailOutboxWorker
   implements OnApplicationBootstrap, OnApplicationShutdown
 {
-  private readonly workerId = randomUUID();
+  private readonly workerId = `mail-${process.pid}`;
   private timer?: NodeJS.Timeout;
   private dispatching = false;
 
@@ -44,7 +34,7 @@ export class MailOutboxWorker
     private readonly encryption: IdentityEncryptionService,
     private readonly templates: MailTemplateService,
     @Inject(MAIL_PROVIDER) private readonly mailProvider: MailProvider,
-    @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly locks: DistributedJobLockService,
   ) {}
 
   onApplicationBootstrap(): void {
@@ -73,58 +63,99 @@ export class MailOutboxWorker
     this.dispatching = true;
 
     try {
-      const events = await this.database.outboxEvent.findMany({
-        where: {
-          publishedAt: null,
-          attemptCount: { lt: 10 },
-          eventType: {
-            in: [
-              'EMAIL_VERIFICATION_REQUESTED',
-              'WELCOME_NEXT_STEP',
-              'PASSWORD_RESET_REQUESTED',
-              'PASSWORD_CHANGED_NOTIFICATION',
-            ],
-          },
-        },
-        orderBy: { createdAt: 'asc' },
-        take: this.config.get('OUTBOX_BATCH_SIZE', { infer: true }),
-        select: {
-          id: true,
-          eventType: true,
-          payload: true,
-        },
-      });
-
-      let published = 0;
-      for (const event of events) {
-        if (await this.dispatchEvent(event)) {
-          published += 1;
-        }
-      }
-      return published;
+      const result = await this.locks.runExclusive(
+        'mail-outbox-batch',
+        this.config.get('OPERATIONAL_JOB_LOCK_TTL_SECONDS', { infer: true }),
+        () => this.dispatchAvailableEvents(),
+      );
+      return result ?? 0;
     } finally {
       this.dispatching = false;
     }
+  }
+
+  private async dispatchAvailableEvents(): Promise<number> {
+    const now = new Date();
+    const events = await this.database.outboxEvent.findMany({
+      where: {
+        publishedAt: null,
+        deadLetteredAt: null,
+        nextAttemptAt: { lte: now },
+        attemptCount: {
+          lt: this.config.get('OUTBOX_MAX_ATTEMPTS', { infer: true }),
+        },
+        OR: [
+          { processingStartedAt: null },
+          {
+            processingStartedAt: {
+              lte: new Date(
+                now.getTime() -
+                  this.config.get('OUTBOX_LEASE_SECONDS', { infer: true }) *
+                    1_000,
+              ),
+            },
+          },
+        ],
+        eventType: {
+          in: [
+            'EMAIL_VERIFICATION_REQUESTED',
+            'WELCOME_NEXT_STEP',
+            'PASSWORD_RESET_REQUESTED',
+            'PASSWORD_CHANGED_NOTIFICATION',
+          ],
+        },
+      },
+      orderBy: { createdAt: 'asc' },
+      take: this.config.get('OUTBOX_BATCH_SIZE', { infer: true }),
+      select: {
+        id: true,
+        eventType: true,
+        payload: true,
+        attemptCount: true,
+      },
+    });
+
+    let published = 0;
+    for (const event of events) {
+      if (await this.dispatchEvent(event)) {
+        published += 1;
+      }
+    }
+    return published;
   }
 
   private async dispatchEvent(event: {
     id: string;
     eventType: string;
     payload: unknown;
+    attemptCount: number;
   }): Promise<boolean> {
-    await ensureRedisConnected(this.redis);
-    const lockKey = `${this.config.get('CACHE_PREFIX', {
-      infer: true,
-    })}lock:outbox:${event.id}`;
-    const lockValue = `${this.workerId}:${randomUUID()}`;
-    const acquired = await this.redis.set(
-      lockKey,
-      lockValue,
-      'EX',
-      LOCK_TTL_SECONDS,
-      'NX',
-    );
-    if (acquired !== 'OK') {
+    const now = new Date();
+    const claimed = await this.database.outboxEvent.updateMany({
+      where: {
+        id: event.id,
+        publishedAt: null,
+        deadLetteredAt: null,
+        nextAttemptAt: { lte: now },
+        OR: [
+          { processingStartedAt: null },
+          {
+            processingStartedAt: {
+              lte: new Date(
+                now.getTime() -
+                  this.config.get('OUTBOX_LEASE_SECONDS', { infer: true }) *
+                    1_000,
+              ),
+            },
+          },
+        ],
+      },
+      data: {
+        processingStartedAt: now,
+        processingBy: this.workerId,
+      },
+    });
+    if (claimed.count !== 1) {
       return false;
     }
 
@@ -141,28 +172,53 @@ export class MailOutboxWorker
       };
       const message = this.messageFor(event.eventType, payload);
 
-      await this.mailProvider.send(message);
+      await this.mailProvider.send({ ...message, deliveryId: event.id });
       await this.database.outboxEvent.updateMany({
-        where: { id: event.id, publishedAt: null },
+        where: {
+          id: event.id,
+          publishedAt: null,
+          processingBy: this.workerId,
+        },
         data: {
           publishedAt: new Date(),
           attemptCount: { increment: 1 },
           lastError: null,
+          processingStartedAt: null,
+          processingBy: null,
         },
       });
       return true;
     } catch {
+      const attemptCount = event.attemptCount + 1;
+      const deadLettered =
+        attemptCount >= this.config.get('OUTBOX_MAX_ATTEMPTS', { infer: true });
       await this.database.outboxEvent.updateMany({
-        where: { id: event.id, publishedAt: null },
+        where: {
+          id: event.id,
+          publishedAt: null,
+          processingBy: this.workerId,
+        },
         data: {
           attemptCount: { increment: 1 },
           lastError: 'MAIL_DELIVERY_FAILED',
+          nextAttemptAt: new Date(
+            Date.now() + this.retryDelayMilliseconds(event.attemptCount),
+          ),
+          processingStartedAt: null,
+          processingBy: null,
+          ...(deadLettered ? { deadLetteredAt: new Date() } : {}),
         },
       });
       return false;
-    } finally {
-      await this.redis.eval(RELEASE_LOCK_SCRIPT, 1, lockKey, lockValue);
     }
+  }
+
+  private retryDelayMilliseconds(attemptCount: number): number {
+    const base = this.config.get('OUTBOX_RETRY_BASE_SECONDS', { infer: true });
+    const maximum = this.config.get('OUTBOX_RETRY_MAX_SECONDS', {
+      infer: true,
+    });
+    return Math.min(maximum, base * 2 ** Math.min(attemptCount, 10)) * 1_000;
   }
 
   private messageFor(
