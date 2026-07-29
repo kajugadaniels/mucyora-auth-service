@@ -176,6 +176,11 @@ const environmentSchema = Joi.object({
     .min(1)
     .max(30)
     .default(10),
+  SESSION_UPGRADE_IDEMPOTENCY_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(300)
+    .max(3_600)
+    .default(900),
   LOGIN_LIMIT_PER_MINUTE: Joi.number().integer().min(1).max(50).default(5),
   REFRESH_LIMIT_PER_MINUTE: Joi.number().integer().min(1).max(100).default(10),
   LOGIN_LOCK_THRESHOLD: Joi.number().integer().min(5).max(50).default(10),
@@ -319,6 +324,7 @@ export interface AuthEnvironment {
   LIMITED_ACCESS_TOKEN_TTL_SECONDS: number;
   REFRESH_TOKEN_TTL_SECONDS: number;
   REFRESH_REPLAY_GRACE_SECONDS: number;
+  SESSION_UPGRADE_IDEMPOTENCY_TTL_SECONDS: number;
   LOGIN_LIMIT_PER_MINUTE: number;
   REFRESH_LIMIT_PER_MINUTE: number;
   LOGIN_LOCK_THRESHOLD: number;
