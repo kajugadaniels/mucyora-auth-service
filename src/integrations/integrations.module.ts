@@ -1,4 +1,8 @@
 import { Module } from '@nestjs/common';
+import { CitizenApiModule } from './citizen-api/citizen-api.module';
 
-@Module({})
+@Module({
+  imports: [CitizenApiModule],
+  exports: [CitizenApiModule],
+})
 export class IntegrationsModule {}
