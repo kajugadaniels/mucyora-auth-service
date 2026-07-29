@@ -239,3 +239,8 @@ Phase 13 adds automated contract, boundary, supply-chain, secret, and container
 gates; CycloneDX SBOM generation; overlap-safe JWT key rotation; hardened
 deployment configuration; and controlled recovery, incident, compatibility,
 and rollout procedures. It does not deploy the service.
+
+Swagger UI is available at `/api/docs` and JSON at `/api/docs-json` only when
+explicitly enabled. `contracts/openapi.json` is the versioned release artifact;
+CI rejects drift. All documentation identities are fictional Rwanda-specific
+examples and must never be replaced with real personal information.
