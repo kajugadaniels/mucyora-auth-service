@@ -1,4 +1,6 @@
+import { createHash } from 'node:crypto';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import argon2 from 'argon2';
 import type { HashOptions } from 'argon2';
@@ -31,12 +33,62 @@ export class PasswordPolicyService {
 
   async hash(password: string, emailNormalized: string): Promise<string> {
     this.assertAcceptable(password, emailNormalized);
+    await this.assertNotCompromised(password);
     await this.acquire();
 
     try {
       return await argon2.hash(password, this.options());
     } finally {
       this.release();
+    }
+  }
+
+  async assertNotCompromised(password: string): Promise<void> {
+    if (
+      !this.config.get('COMPROMISED_PASSWORD_CHECK_ENABLED', { infer: true })
+    ) {
+      return;
+    }
+    const digest = createHash('sha1')
+      .update(password, 'utf8')
+      .digest('hex')
+      .toUpperCase();
+    const prefix = digest.slice(0, 5);
+    const suffix = digest.slice(5);
+    try {
+      const response = await fetch(
+        `${this.config.get('COMPROMISED_PASSWORD_API_URL', {
+          infer: true,
+        })}/${prefix}`,
+        {
+          headers: {
+            'Add-Padding': 'true',
+            'User-Agent': 'mucyora-auth-password-screening',
+          },
+          signal: AbortSignal.timeout(
+            this.config.get('COMPROMISED_PASSWORD_TIMEOUT_MS', {
+              infer: true,
+            }),
+          ),
+        },
+      );
+      if (!response.ok) throw new Error('screening unavailable');
+      const compromised = (await response.text())
+        .split(/\r?\n/)
+        .some((line) => line.split(':', 1)[0] === suffix);
+      if (compromised) {
+        throw new BadRequestException({
+          code: 'PASSWORD_COMPROMISED',
+          message:
+            'Choose a password that has not appeared in known credential breaches.',
+        });
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new ServiceUnavailableException({
+        code: 'PASSWORD_SCREENING_UNAVAILABLE',
+        message: 'Password validation is temporarily unavailable.',
+      });
     }
   }
 
