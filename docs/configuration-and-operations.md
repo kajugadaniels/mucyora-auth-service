@@ -1,5 +1,11 @@
 # Configuration and Operations
 
+Advanced dependency, KMS, telemetry, passkey, risk, recovery-code, and
+password-screening settings are documented in
+[Advanced Auth hardening](advanced-auth-hardening.md). Production requires
+Redis readiness, HTTPS passkey origins, and an HTTPS OTLP endpoint when
+telemetry is enabled.
+
 ## Fixed Port
 
 The service listens on port `3000`. This is a code-level service contract and
