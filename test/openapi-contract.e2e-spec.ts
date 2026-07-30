@@ -27,7 +27,7 @@ describe('OpenAPI contract (e2e)', () => {
   it('documents every operation with stable versioned release metadata', () => {
     const operations = collectOperations(document);
     expect(document.info.version).toBe(AUTH_API_VERSION);
-    expect(operations).toHaveLength(29);
+    expect(operations).toHaveLength(37);
     for (const operation of operations) {
       expect(operation.operationId).toMatch(/^[A-Za-z]+_[A-Za-z]+$/);
       expect(operation.summary).toBeTruthy();
