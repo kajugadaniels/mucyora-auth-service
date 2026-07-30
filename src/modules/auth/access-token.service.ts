@@ -5,6 +5,7 @@ import {
   sign,
   verify,
 } from 'node:crypto';
+import { KMSClient, SignCommand } from '@aws-sdk/client-kms';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SessionLevel } from '@mucyora/db';
@@ -29,6 +30,7 @@ export interface AccessTokenClaims {
 @Injectable()
 export class AccessTokenService {
   private readonly privateKey;
+  private readonly kms: KMSClient | null;
   private readonly publicKey;
   private readonly verificationKeys: Map<
     string,
@@ -39,9 +41,21 @@ export class AccessTokenService {
   private readonly audiences: string[];
 
   constructor(private readonly config: ConfigService<AuthEnvironment, true>) {
-    this.privateKey = createPrivateKey(
-      config.get('MUCYORA_AUTH_SIGNING_PRIVATE_KEY', { infer: true }),
-    );
+    const provider = config.get('MUCYORA_AUTH_SIGNING_PROVIDER', {
+      infer: true,
+    });
+    this.privateKey =
+      provider === 'SOFTWARE_PEM'
+        ? createPrivateKey(
+            config.get('MUCYORA_AUTH_SIGNING_PRIVATE_KEY', { infer: true }),
+          )
+        : null;
+    this.kms =
+      provider === 'AWS_KMS'
+        ? new KMSClient({
+            region: config.get('AWS_REGION', { infer: true }),
+          })
+        : null;
     this.publicKey = createPublicKey(
       config.get('MUCYORA_AUTH_SIGNING_PUBLIC_KEY', { infer: true }),
     );
@@ -66,11 +80,11 @@ export class AccessTokenService {
       .filter(Boolean);
   }
 
-  issue(input: {
+  async issue(input: {
     userId: string;
     sessionId: string;
     sessionLevel: SessionLevel;
-  }): { token: string; expiresIn: number } {
+  }): Promise<{ token: string; expiresIn: number }> {
     const now = Math.floor(Date.now() / 1_000);
     const expiresIn = this.config.get(
       input.sessionLevel === SessionLevel.LIMITED
@@ -98,11 +112,28 @@ export class AccessTokenService {
     };
     const payload = encodeJson(claims);
     const signingInput = `${header}.${payload}`;
-    const signature = sign(
-      'RSA-SHA256',
-      Buffer.from(signingInput, 'ascii'),
-      this.privateKey,
-    ).toString('base64url');
+    const signingBytes = Buffer.from(signingInput, 'ascii');
+    const signature = this.kms
+      ? Buffer.from(
+          (
+            await this.kms.send(
+              new SignCommand({
+                KeyId: this.config.get('MUCYORA_AUTH_KMS_KEY_ID', {
+                  infer: true,
+                }),
+                Message: signingBytes,
+                MessageType: 'RAW',
+                SigningAlgorithm: 'RSASSA_PKCS1_V1_5_SHA_256',
+              }),
+            )
+          ).Signature ?? new Uint8Array(),
+        ).toString('base64url')
+      : sign('RSA-SHA256', signingBytes, this.privateKey!).toString(
+          'base64url',
+        );
+    if (!signature) {
+      throw new Error('Signing provider returned an empty signature');
+    }
 
     return { token: `${signingInput}.${signature}`, expiresIn };
   }
