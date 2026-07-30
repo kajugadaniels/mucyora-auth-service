@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Optional,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -36,6 +37,7 @@ import {
   AuthRateLimiter,
 } from './auth-rate-limiter.service';
 import { AuthTokenResponseDto, LoginDto, TokenTransport } from './dto/auth.dto';
+import { LoginRiskService } from './login-risk.service';
 
 const RELEASE_LOCK_SCRIPT = `
 if redis.call('GET', KEYS[1]) == ARGV[1] then
@@ -69,6 +71,7 @@ export class AuthenticationService {
     private readonly rateLimiter: AuthRateLimiter,
     private readonly securityEvents: SecurityEventWriter,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    @Optional() private readonly loginRisk?: LoginRiskService,
   ) {}
 
   async login(
@@ -138,8 +141,18 @@ export class AuthenticationService {
       });
     }
 
+    const userAgentHash = this.digests.requestContext(context.userAgent);
+    const risk = this.loginRisk
+      ? await this.loginRisk.assess({
+          userId: user.id,
+          deviceId: input.deviceId,
+          ipHash,
+          userAgentHash,
+        })
+      : { level: 'LOW' as const, reason: null };
     const sessionLevel =
-      user.identityVerificationStatus === IdentityVerificationStatus.VERIFIED
+      user.identityVerificationStatus === IdentityVerificationStatus.VERIFIED &&
+      risk.level === 'LOW'
         ? SessionLevel.FULL
         : SessionLevel.LIMITED;
     const refresh = this.tokens.generate(48);
@@ -161,7 +174,9 @@ export class AuthenticationService {
           deviceId: input.deviceId,
           deviceLabel: input.deviceLabel,
           ipHash,
-          userAgentHash: this.digests.requestContext(context.userAgent),
+          userAgentHash,
+          riskLevel: risk.level,
+          riskReason: risk.reason,
           expiresAt,
         },
         select: { id: true },
@@ -399,14 +414,14 @@ export class AuthenticationService {
     });
   }
 
-  private buildIssuedAuthentication(
+  private async buildIssuedAuthentication(
     userId: string,
     sessionId: string,
     sessionLevel: SessionLevel,
     refreshToken: string,
     transport: TokenTransport,
-  ): IssuedAuthentication {
-    const access = this.accessTokens.issue({
+  ): Promise<IssuedAuthentication> {
+    const access = await this.accessTokens.issue({
       userId,
       sessionId,
       sessionLevel,
