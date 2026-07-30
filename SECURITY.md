@@ -1,260 +1,1255 @@
-# MUCYORA Auth Security Policy
+<div align="center">
+
+# Mucyora Auth Service Security
+
+### Authentication security policy, account-takeover threat model, token controls, privileged-access requirements, and incident response
+
+[![Scope](https://img.shields.io/badge/Scope-Auth_Service-1E88E5)](#scope)
+[![Sessions](https://img.shields.io/badge/Sessions-Rotating_%26_Revocable-2E7D32)](#session-and-refresh-token-security)
+[![Passwords](https://img.shields.io/badge/Passwords-Modern_Hashing-6A1B9A)](#password-security)
+[![Status](https://img.shields.io/badge/Source_Reconciliation-Required-orange)](#source-reconciliation-status)
+
+</div>
+
+---
+
+> [!WARNING]
+> **Source reconciliation required:** this policy defines the expected security baseline for Mucyora Auth Service. It is not an attestation that every control is implemented. The repository was not publicly retrievable during this documentation pass. Reconcile the runtime, routes, token handling, password hashing, OTP logic, database schema, integrations, CI, and tests before production use.
+
+> [!IMPORTANT]
+> Authentication and authorization are different. This service should establish identity and trusted claims; Mucyora Engine, Signature Service, and other domain services must still enforce ownership, organization scope, signer authority, and record-state permissions.
+
+> [!CAUTION]
+> Account recovery is commonly the weakest path. Password resets, OTPs, support overrides, recovery codes, and MFA resets require the same or stronger protection than login.
+
+---
+
+## Table of contents
+
+- [Scope](#scope)
+- [Source reconciliation status](#source-reconciliation-status)
+- [Security objectives](#security-objectives)
+- [Security principles](#security-principles)
+- [Protected assets](#protected-assets)
+- [Data classification](#data-classification)
+- [Trust boundaries](#trust-boundaries)
+- [Threat actors](#threat-actors)
+- [Attack surface](#attack-surface)
+- [Account enumeration](#account-enumeration)
+- [Registration security](#registration-security)
+- [Password security](#password-security)
+- [Credential stuffing and brute force](#credential-stuffing-and-brute-force)
+- [Login security](#login-security)
+- [Session and refresh-token security](#session-and-refresh-token-security)
+- [Access-token security](#access-token-security)
+- [Refresh-token rotation and reuse detection](#refresh-token-rotation-and-reuse-detection)
+- [Logout and revocation](#logout-and-revocation)
+- [Email-verification security](#email-verification-security)
+- [Password-reset security](#password-reset-security)
+- [OTP security](#otp-security)
+- [MFA security](#mfa-security)
+- [Passkey and WebAuthn security](#passkey-and-webauthn-security)
+- [Recovery-code security](#recovery-code-security)
+- [Account-recovery security](#account-recovery-security)
+- [Privileged-account security](#privileged-account-security)
+- [Organization-membership security](#organization-membership-security)
+- [Service-identity security](#service-identity-security)
+- [JWT security](#jwt-security)
+- [Token-signing-key lifecycle](#token-signing-key-lifecycle)
+- [API security](#api-security)
+- [Rate limiting and abuse controls](#rate-limiting-and-abuse-controls)
+- [CORS, cookies, and CSRF](#cors-cookies-and-csrf)
+- [Input validation and normalization](#input-validation-and-normalization)
+- [Error handling](#error-handling)
+- [Database security](#database-security)
+- [Token and challenge storage](#token-and-challenge-storage)
+- [Secrets and configuration](#secrets-and-configuration)
+- [Email and SMS provider security](#email-and-sms-provider-security)
+- [Logging and security audit](#logging-and-security-audit)
+- [Privacy and minimization](#privacy-and-minimization)
+- [Retention and deletion](#retention-and-deletion)
+- [Availability and resilience](#availability-and-resilience)
+- [Dependency and supply-chain security](#dependency-and-supply-chain-security)
+- [CI/CD security](#cicd-security)
+- [Container and runtime hardening](#container-and-runtime-hardening)
+- [Environment separation](#environment-separation)
+- [Security testing](#security-testing)
+- [Threat scenarios](#threat-scenarios)
+- [Incident response](#incident-response)
+- [Monitoring and alerting](#monitoring-and-alerting)
+- [Vulnerability reporting](#vulnerability-reporting)
+- [Security review checklist](#security-review-checklist)
+- [Source reconciliation checklist](#source-reconciliation-checklist)
+- [Production-hardening roadmap](#production-hardening-roadmap)
+- [Document maintenance](#document-maintenance)
+
+---
 
 ## Scope
 
-This policy covers the authentication service, including its HTTP boundary,
-runtime configuration, database access, future credentials and sessions, NIDA
-integration, and identity-verification orchestration.
+This policy applies to:
 
-## Reporting a Vulnerability
+- account registration;
+- email and phone verification;
+- password credentials;
+- login;
+- access and refresh tokens;
+- logout and session management;
+- password reset;
+- OTP and MFA;
+- passkeys and recovery codes;
+- organization membership claims;
+- service identities;
+- token-signing keys;
+- authentication security audit;
+- email and SMS integrations;
+- production deployment.
 
-Report suspected vulnerabilities privately to the MUCYORA security team. Do
-not include production credentials, raw tokens, national identifiers,
-biometric media, or database exports in an issue or chat message.
+It also defines security expectations for services that validate Mucyora-issued tokens.
 
-Include:
+---
 
-- the affected component and version;
-- a minimal reproduction using synthetic data;
-- the expected and observed impact;
-- any relevant safe logs or correlation IDs;
-- whether active exploitation is suspected.
+## Source reconciliation status
 
-Do not perform destructive testing, access another person’s account, call real
-identity providers without authorization, or publish an unpatched issue.
+| Area | Status |
+|---|---|
+| Runtime/framework | `TBD_FROM_SOURCE` |
+| Password hashing | `TBD_FROM_SOURCE` |
+| Access-token type | `TBD_FROM_SOURCE` |
+| Refresh-token storage | `TBD_FROM_SOURCE` |
+| Rotation/reuse detection | `TBD_FROM_SOURCE` |
+| Email verification | `TBD_FROM_SOURCE` |
+| Password reset | `TBD_FROM_SOURCE` |
+| OTP/MFA | `TBD_FROM_SOURCE` |
+| Database | `TBD_FROM_SOURCE` |
+| Rate limiting | `TBD_FROM_SOURCE` |
+| Audit | `TBD_FROM_SOURCE` |
+| CI/tests | `TBD_FROM_SOURCE` |
+| Security contact | `TBD_FROM_SOURCE` |
 
-## Trust Boundaries
+Use these labels during reconciliation:
 
-- Auth is the only issuer of user access and refresh sessions.
-- `api/admin` owns administrator authentication and authorization.
-- `api/db` owns Prisma schema, migrations, generated clients, and grants.
-- `api/engine` owns biometric computation, not user state.
-- `api/signature` owns signing keys, certificates, and signatures.
-- `api/user` owns profiles, devices, ownership, transfers, and agreements.
+- **Implemented**
+- **Partially implemented**
+- **Planned**
+- **Not applicable**
+- **Unknown**
 
-## Foundation Controls
+---
 
-- The service listens only on fixed port `3000`.
-- Production database connections must use `mucyora_auth_app`.
-- Browser origins use an exact allowlist; wildcard origins are rejected.
-- Credentialed CORS never combines with a wildcard.
-- Request bodies are limited before controller processing.
-- Unknown DTO properties are rejected.
-- Helmet supplies secure HTTP headers.
-- Unexpected errors return a generic response without stack traces.
-- Correlation IDs are validated or generated and returned to callers.
-- Logs are structured and must not contain secrets or identity values.
-- Swagger is disabled by default and requires Basic authentication when
-  explicitly enabled in production.
-- Liveness performs no dependency calls.
-- Readiness checks database availability and caches the result briefly.
-- Shutdown hooks close database connections.
-- Identity lookup uses a versioned keyed digest, not plain SHA-256.
-- Protected identity values use AES-256-GCM authenticated encryption.
-- Encryption, identity lookup, token, and request-context keys are
-  purpose-separated.
-- Opaque tokens use cryptographically secure randomness and digest-only
-  persistence contracts.
-- Security-event metadata rejects sensitive fields and structured payloads.
-- Citizen-provider destinations are fixed at startup, redirects are disabled,
-  production requires HTTPS, and certificate verification remains enabled.
-- Citizen-provider retries are bounded and protected by a circuit breaker.
-- Citizen cache keys use versioned HMAC digests and positive cache values use
-  purpose-bound AES-256-GCM encryption.
-- Provider responses are schema-validated and minimized before leaving the
-  adapter.
-- Citizen lookup is limited independently by keyed IP, client-instance, and
-  NID dimensions in Redis.
-- Missing, ineligible, and registered identities use the same external denial.
-- Registration challenge tokens encrypt their database identifiers and expire
-  within a bounded short lifetime.
-- Challenge attempt and consumption operations use conditional database
-  updates; only one transaction can consume a pending challenge.
-- New passwords use bounded-concurrency Argon2id and a common-password policy.
-- Registration atomically stores the credential, encrypted identity, consent
-  versions, token digest, challenge consumption, audit, and outbox record.
-- Email verification tokens are random, digest-only, expiring, supersedable,
-  and atomically single-use.
-- Raw email tokens appear in durable outbox state only as purpose-bound
-  AES-GCM ciphertext.
-- Resend uses generic responses and keyed Redis limits by IP and email.
-- Mail delivery occurs after commit with per-event Redis locks and safe failure
-  codes.
-- Access tokens use a matching Auth-owned RSA private key and public JWKS.
-- Access claims exclude identity/profile data and protected routes confirm the
-  database session remains active.
-- Unknown-account login performs dummy Argon2 verification and shares the
-  wrong-password response.
-- Refresh tokens are digest-only, generation-bound, atomically rotated, and
-  coordinated across replicas with Redis locks.
-- Reuse outside the grace period compromises only the affected session family
-  and creates a high-severity event.
-- Browser refresh cookies are scoped, HttpOnly, secure in production, and
-  protected by an HMAC-bound double-submit CSRF token.
-- Session revocation atomically revokes associated refresh records.
-- Password recovery uses generic responses, distributed IP/email limits, and
-  indexed digest-only tokens with bounded expiry.
-- Reset tokens are conditionally consumed so only one concurrent request can
-  succeed.
-- Authenticated password change requires the current password and rejects
-  current-password reuse.
-- Successful reset or change revokes every active session, refresh token, and
-  outstanding recovery request for the user.
-- Password reset links are encrypted with a purpose-bound envelope in the
-  outbox, and password-change notifications are delivered asynchronously.
-- Identity-verification attempts require active NIDA linkage, verified email,
-  an eligible account, biometric consent, and rolling-window capacity.
-- Verification media uses short-lived attempt-bound S3 policies with fixed
-  checksum, type, dimension metadata, size range, and random object names.
-- Stored verification object references use purpose-bound encryption and are
-  deleted after terminal outcomes or by bounded reconciliation.
-- Engine requests are authenticated with caller/audience-bound HMAC signatures,
-  timestamp, nonce, and body digest; Engine rejects nonce replay through Redis.
-- Engine receives attempt-bound object and provider-liveness references, never
-  a raw or encrypted NID.
-- AWS Face Liveness is authoritative; still-image quality heuristics are not
-  accepted as proof of liveness.
-- Provider outages remain explicit unavailable outcomes and are never converted
-  into identity mismatch decisions.
+## Security objectives
 
-## Sensitive Data
+### Confidentiality
 
-Never log or return:
+Protect:
 
-- passwords or password hashes;
-- raw verification, reset, refresh, or access tokens;
-- Authorization or cookie values;
-- plaintext NID or other government identifiers;
-- encryption, HMAC, signing, or provider keys;
-- database connection strings;
-- biometric images or raw provider responses;
-- private object-storage references.
+- passwords and password hashes;
+- refresh tokens;
+- reset and verification tokens;
+- OTPs;
+- MFA secrets;
+- recovery codes;
+- service credentials;
+- token-signing keys;
+- contact details;
+- session metadata.
 
-Phase 2 cryptography and token utilities follow the implementation plan and
-reviewed database contract. They are reusable primitives only; later workflow
-phases must still use them correctly and atomically.
+### Integrity
 
-Phase 3 uses those primitives for the private citizen-provider cache. It does
-not expose a citizen lookup endpoint, persist provider payloads, or create user
-records.
+Protect:
 
-Phase 4 exposes only registration initiation. It persists an encrypted,
-minimized challenge and never creates a user account. The normalized email is
-bound to the challenge, while the plaintext NID is neither stored nor returned.
+- account state;
+- verified contacts;
+- roles;
+- organization memberships;
+- session and token-family state;
+- MFA enrollment;
+- service scopes;
+- security audit.
 
-Phase 5 consumes that challenge to create the account. It does not issue a
-session or access token. Phase 6 performs that work only after valid
-credentials and account gates.
+### Availability
 
-Phase 7 implements password recovery and authenticated password change. It
-does not implement biometric verification or limited-to-full session upgrade.
+Maintain safe authentication during:
 
-Phase 8 implements account-enrollment identity verification and marks a user
-verified on pass. It does not upgrade or replace the caller’s limited session.
+- credential attacks;
+- provider outages;
+- database degradation;
+- signing-key rotation;
+- traffic spikes.
 
-Phase 9 replaces a verified caller’s limited session with a new full session.
-The transaction checks the passed enrollment attempt belongs to the caller,
-revokes the old session and all its refresh tokens, creates the full session,
-and records the audit event before committing. A conditional session update
-and serializable isolation permit only one concurrent winner.
+### Accountability
 
-Upgrade retries require the same idempotency key and request. The bounded
-idempotency record contains only a purpose-bound AES-GCM encrypted credential
-result. The upgrade-only guard accepts the just-revoked limited access token
-solely when its revocation reason proves a completed upgrade; all normal
-protected routes continue to reject revoked sessions.
+Record:
 
-Phase 10 requires a full authenticated session to create a fresh-verification
-challenge. The challenge stores an HMAC of the target resource, never the raw
-target, and is bound to one user, session, purpose, verification attempt, policy
-version, and expiry.
+- registration;
+- verification;
+- login and failure;
+- refresh and reuse;
+- password reset;
+- MFA changes;
+- role and membership changes;
+- session revocation;
+- service credential changes.
 
-Successful fresh verification produces a short-lived opaque assertion. Only
-its keyed digest and a purpose-bound AES-GCM replay envelope are persisted.
-`api/user`, `api/signature`, and Auth Recovery authenticate with separate
-service credentials and may consume only their assigned purpose. Consumption
-checks the user, purpose, target HMAC, status, and expiry before a conditional
-one-time state transition; replay and cross-purpose use fail closed.
+---
 
-Step-up completion never upgrades permanent identity state. Recent-proof reuse
-is deliberately disabled until a reviewed policy defines when it is safe.
+## Security principles
 
-Phase 11 jobs use Redis leader leases and bounded indexed database batches.
-Outbox events additionally use database processing leases, exponential
-backoff, explicit dead-letter state, and stable provider idempotency keys.
-Errors persist and log only stable codes.
+- deny by default;
+- generic public errors;
+- modern password hashing;
+- short access-token lifetime;
+- rotating refresh tokens;
+- single-use recovery tokens;
+- MFA for privileged roles;
+- separate service identities;
+- minimized signed claims;
+- protected secrets;
+- hardened account recovery;
+- durable security audit.
 
-Media and security-event deletion excludes active legal holds. Manual-review
-verification media is not automatically deleted. Orphaned object-storage
-reconciliation is paginated, waits through a configurable grace period, and
-deletes only objects whose keyed reference digest has no database record.
+---
 
-Phase 12 performance validation preserves every authentication, authorization,
-rate-limit, timeout, and cryptographic control. Load profiles accept only
-synthetic inputs, reject production-looking targets, and require explicit
-approval for non-local targets. Request telemetry records low-cardinality route
-templates, status, duration, method, and correlation ID without request bodies,
-credentials, tokens, identity values, or dependency connection details.
+## Protected assets
 
-Database query-plan inspection is read-only and requires both a dedicated
-performance connection string and an explicit opt-in. It must run only against
-an approved disposable branch containing synthetic data. Local microbenchmarks
-and soak checks are capacity evidence, not permission to weaken Argon2, replay
-protection, distributed coordination, or failure-closed behavior.
+| Asset | Risk |
+|---|---|
+| Password hash | Offline cracking |
+| Password pepper | System-wide credential risk |
+| Refresh token | Persistent account takeover |
+| Reset token | Password takeover |
+| Verification token | Account activation abuse |
+| OTP | Challenge bypass |
+| MFA secret | Factor cloning |
+| Recovery code | MFA bypass |
+| Token-signing private key | Forged identity |
+| Admin account | Platform compromise |
+| Service credential | Backend impersonation |
+| Role/membership state | Privilege escalation |
+| Security audit | Hidden attack activity |
 
-Phase 13 release candidates must pass API-contract, database-boundary,
-dependency, secret, and container checks and produce a CycloneDX SBOM. JWT key
-rotation publishes bounded verification-only overlap keys so in-flight access
-tokens survive controlled rotation without retaining old private material.
-Production approval additionally requires external evidence for IAM, private
-TLS networking, restore and credential-rotation drills, alert delivery,
-staging load/soak results, and independent penetration review.
+---
 
-Deployment uses an immutable image digest, non-root identity, read-only
-filesystem, dropped Linux capabilities, bounded resources, health probes, and
-staged promotion. Codex does not deploy automatically.
+## Data classification
 
-Swagger is disabled by default and production access is authenticated. Its
-committed OpenAPI contract contains only fictional Rwanda-specific examples.
-Real names, NIDs, telephone numbers, emails, tokens, credentials, and provider
-responses are forbidden in generated or hand-written API documentation.
+| Class | Examples |
+|---|---|
+| Public | Public token-verification key set |
+| Internal | Auth metrics and non-sensitive configuration |
+| Confidential | Email, phone, session history |
+| Restricted | Roles, memberships, device/IP context |
+| Highly restricted | Password hashes, tokens, MFA secrets, signing keys |
 
-AWS KMS signing mode grants the workload only `kms:Sign`; private signing
-material never enters Auth. Passkey challenges are single-use and origin/RP
-bound, credential private keys remain on authenticators, and recovery codes are
-stored only as keyed digests. New-device or changed-context logins receive
-limited sessions until existing step-up verification succeeds.
+---
 
-Compromised-password screening sends only a five-character SHA-1 prefix to a
-fixed HTTPS range endpoint with padded responses and bounded timeout. Full
-hashes and plaintext passwords never leave Auth. OpenTelemetry exporters must
-exclude bodies, authorization headers, cookies, identity values, tokens, and
-private object references.
+## Trust boundaries
 
-## Database Safety
+```mermaid
+flowchart LR
+    User["User"]
+    Partner["Service / Partner"]
+    Edge["Gateway"]
+    Auth["Auth Service"]
+    DB["Database"]
+    KMS["Signing Key / KMS"]
+    Email["Email Provider"]
+    SMS["SMS Provider"]
+    Audit["Audit / SIEM"]
 
-Auth imports database behavior only from `@mucyora/db`. This repository must
-not contain a Prisma schema, migrations, generated Prisma client, Prisma CLI,
-or `DATABASE_MIGRATION_URL`.
+    User --> Edge
+    Partner --> Edge
+    Edge --> Auth
+    Auth --> DB
+    Auth --> KMS
+    Auth --> Email
+    Auth --> SMS
+    Auth --> Audit
+```
 
-The runtime role must not have DDL or migration privileges. Schema changes are
-reviewed and executed in `api/db`.
+Every boundary requires independent credentials, validation, and data minimization.
 
-## Deployment
+---
 
-- Inject secrets through the deployment platform.
-- Do not bake `.env` files into images.
-- Run the container as its non-root user.
-- Terminate TLS at an approved trusted boundary.
-- Restrict database and future internal-provider egress.
-- Restrict citizen-provider and Redis egress to their approved destinations.
-- Require provider HTTPS and Redis TLS in production.
-- Keep Swagger disabled unless there is an approved operational need.
-- Use readiness for traffic admission and liveness only for process recovery.
+## Threat actors
 
-## Incident Priorities
+- credential-stuffing attacker;
+- password sprayer;
+- SIM-swap attacker;
+- malicious registrant;
+- fraudulent dealer;
+- compromised partner service;
+- malicious support operator;
+- compromised administrator;
+- supply-chain attacker;
+- attacker with a leaked database backup;
+- attacker with a token-signing key.
 
-Immediately escalate suspected leakage of credentials, signing material,
-tokens, NID data, biometric media, or database access. Preserve safe audit
-evidence, revoke affected access through an approved procedure, and avoid
-destroying records needed for investigation.
+---
+
+## Attack surface
+
+- registration;
+- login;
+- token refresh;
+- logout;
+- reset;
+- email verification;
+- phone OTP;
+- MFA and passkeys;
+- session listing and revocation;
+- service-token issuance;
+- JWKS;
+- email links;
+- SMS callbacks;
+- admin support;
+- database;
+- CI/CD;
+- logs and monitoring.
+
+---
+
+## Account enumeration
+
+Public flows must not confirm account existence.
+
+Affected endpoints include:
+
+- login;
+- registration;
+- reset request;
+- verification resend;
+- OTP request.
+
+Use generic responses and similar timing where practical. Internal audit may record exact outcomes.
+
+---
+
+## Registration security
+
+Controls:
+
+- per-IP and per-contact throttling;
+- CAPTCHA or risk challenge when needed;
+- normalized email and phone;
+- duplicate controls;
+- compromised-password screening;
+- no privileged role from public input;
+- consent capture;
+- expiring verification challenge;
+- reviewed dealer/partner/admin onboarding;
+- security audit.
+
+Do not trust self-declared organization membership.
+
+---
+
+## Password security
+
+Use:
+
+- Argon2id, scrypt, or reviewed bcrypt settings;
+- a unique salt;
+- optional protected pepper;
+- hash-parameter versioning;
+- transparent rehash after successful login.
+
+Allow:
+
+- long passphrases;
+- password managers;
+- paste;
+- Unicode according to a documented policy.
+
+Reject:
+
+- known compromised passwords;
+- very short passwords;
+- passwords equal to email or phone.
+
+Do not silently truncate, store password hints, email passwords, or log password values.
+
+---
+
+## Credential stuffing and brute force
+
+Use layered defenses:
+
+- gateway and application limits;
+- IP and account limits;
+- device and risk signals;
+- progressive delays;
+- breached-password screening;
+- MFA;
+- alerting.
+
+Avoid a simple permanent lockout that lets an attacker deny service to another user.
+
+---
+
+## Login security
+
+Login should:
+
+1. normalize the identifier;
+2. retrieve account state safely;
+3. verify the password in constant-time behavior provided by the hash library;
+4. enforce active/suspended state;
+5. evaluate abuse or lockout risk;
+6. require MFA where appropriate;
+7. create a session;
+8. write a security event.
+
+Return a generic failure message.
+
+---
+
+## Session and refresh-token security
+
+A session should contain:
+
+- unique session ID;
+- account ID;
+- token family ID;
+- created and last-used time;
+- expiration;
+- authentication methods;
+- revocation state;
+- constrained device metadata.
+
+Refresh tokens should be high entropy and stored only as hashes.
+
+---
+
+## Access-token security
+
+If JWTs are used:
+
+- use a short TTL;
+- prefer asymmetric signing;
+- require issuer and audience;
+- include token type, `kid`, `jti`, and session ID;
+- keep claims minimal.
+
+Do not place full contact, identity, device, or ownership information in tokens.
+
+---
+
+## Refresh-token rotation and reuse detection
+
+On each refresh:
+
+1. hash and locate the presented token;
+2. confirm the token family and session are active;
+3. atomically consume the token;
+4. create a replacement;
+5. return it once.
+
+On reuse:
+
+- revoke the entire token family;
+- revoke the session;
+- record suspected theft;
+- notify the account where appropriate;
+- require login.
+
+Use a transaction and unique constraint to handle concurrent refresh requests.
+
+---
+
+## Logout and revocation
+
+Support:
+
+- current-session logout;
+- all-session logout;
+- selected session revocation;
+- security/admin revocation;
+- password-reset revocation;
+- account-suspension revocation.
+
+Short access-token lifetimes limit residual access after revocation.
+
+---
+
+## Email-verification security
+
+Verification tokens must be:
+
+- cryptographically random;
+- single-use;
+- hashed at rest;
+- expiring;
+- account- and purpose-bound.
+
+Resend behavior requires:
+
+- cooldown;
+- hourly and daily caps;
+- prior-token invalidation;
+- generic response.
+
+Links must use an approved HTTPS host and avoid third-party analytics that receive token query values.
+
+---
+
+## Password-reset security
+
+Reset request:
+
+- generic response;
+- strict throttling;
+- short TTL;
+- hashed token;
+- one active challenge or controlled token family.
+
+Completion:
+
+- consume atomically;
+- validate the new password;
+- revoke sessions;
+- write audit;
+- notify the user.
+
+Support staff should not directly set a password.
+
+---
+
+## OTP security
+
+- use a cryptographically secure random code;
+- short TTL;
+- attempt cap;
+- resend cooldown;
+- request cap;
+- account/contact/purpose binding;
+- atomic consumption;
+- protected storage;
+- uniform errors.
+
+Never log OTP values.
+
+---
+
+## MFA security
+
+Privileged accounts require MFA.
+
+Preferred factors:
+
+1. passkey or hardware security key;
+2. TOTP;
+3. SMS only as a reviewed fallback.
+
+Enrollment and removal require recent authentication. MFA reset requires stronger recovery and audit.
+
+---
+
+## Passkey and WebAuthn security
+
+If implemented:
+
+- validate origin and relying-party ID;
+- use a single-use challenge;
+- verify signature and user-verification flags;
+- bind the credential to the account;
+- store credential public key and counters safely;
+- review backup-eligibility policy.
+
+---
+
+## Recovery-code security
+
+Recovery codes must be:
+
+- high entropy;
+- one-time;
+- hashed;
+- shown only once;
+- limited in count;
+- invalidated when regenerated.
+
+Using a recovery code should trigger a security notification.
+
+---
+
+## Account-recovery security
+
+Recovery must resist social engineering.
+
+Use:
+
+- verified channels;
+- cooling-off period for privileged accounts;
+- evidence and review;
+- user notification;
+- session revocation;
+- durable audit;
+- separation of support and approval roles.
+
+---
+
+## Privileged-account security
+
+Require:
+
+- phishing-resistant MFA where possible;
+- shorter session lifetime;
+- recent authentication for sensitive actions;
+- no shared accounts;
+- role approval;
+- session review;
+- network/device restrictions where suitable;
+- break-glass controls.
+
+---
+
+## Organization-membership security
+
+Role claims must derive from current trusted membership.
+
+Controls:
+
+- organization scope;
+- approved inviter/creator;
+- active status;
+- validity period;
+- no self-grant;
+- final-admin protection;
+- propagation of membership revocation.
+
+High-risk services should recheck current membership rather than relying only on an old token.
+
+---
+
+## Service-identity security
+
+Service identities require:
+
+- unique subject;
+- narrow scopes;
+- explicit audience;
+- short token lifetime;
+- workload identity, mTLS, or protected service credentials;
+- revocation;
+- audit.
+
+Do not reuse human refresh-token flows for machine callers.
+
+---
+
+## JWT security
+
+Validate:
+
+- `alg`;
+- signature;
+- issuer;
+- audience;
+- expiration;
+- not-before;
+- issued-at;
+- subject;
+- token type;
+- maximum lifetime.
+
+Reject:
+
+- `none`;
+- algorithm/key confusion;
+- missing audience;
+- unsupported critical headers.
+
+---
+
+## Token-signing-key lifecycle
+
+Keys require:
+
+- KMS/HSM generation where possible;
+- key ID;
+- activation;
+- overlapping verification window;
+- rotation;
+- retirement;
+- emergency revocation;
+- audit.
+
+Retain old public verification keys until every token signed by them has expired.
+
+---
+
+## API security
+
+- TLS;
+- authentication by default;
+- strict DTOs;
+- request-body limits;
+- content-type enforcement;
+- secure headers;
+- request IDs;
+- safe errors;
+- no debug mode in production.
+
+Internal service-credential endpoints must not be publicly reachable.
+
+---
+
+## Rate limiting and abuse controls
+
+Use shared, distributed limits for:
+
+- login;
+- registration;
+- refresh;
+- verification resend;
+- reset request;
+- OTP request and verify;
+- MFA verify;
+- service-token issuance.
+
+Correlate by IP, account, normalized contact hash, organization, and device risk signal.
+
+---
+
+## CORS, cookies, and CSRF
+
+If cookies store refresh or session credentials:
+
+- `HttpOnly`;
+- `Secure`;
+- appropriate `SameSite`;
+- narrow path/domain;
+- CSRF token;
+- origin validation.
+
+If tokens are returned in JSON, document client storage and XSS risks.
+
+CORS must use exact trusted origins.
+
+---
+
+## Input validation and normalization
+
+- normalize email consistently;
+- normalize phone to E.164;
+- validate UUIDs;
+- enforce length limits;
+- reject control characters;
+- prevent mass assignment;
+- reject unknown fields on security-sensitive commands.
+
+Do not normalize passwords in a surprising or undocumented way.
+
+---
+
+## Error handling
+
+Do not reveal:
+
+- whether an account exists;
+- password-hash internals;
+- token-parser details;
+- database schema;
+- provider internals;
+- stack traces.
+
+Return a request ID for support investigation.
+
+---
+
+## Database security
+
+Use Mucyora DB V2 schema and migrations with a least-privilege runtime role.
+
+The Auth Service should not:
+
+- alter schema;
+- manipulate migration history;
+- delete immutable security events;
+- access unrelated device or evidence data.
+
+Critical token and session transitions require transactions and constraints.
+
+---
+
+## Token and challenge storage
+
+Store only hashes for:
+
+- refresh tokens;
+- password-reset tokens;
+- verification tokens;
+- recovery codes;
+- high-entropy API keys.
+
+OTP storage should be short-lived, protected, attempt-limited, and purpose-bound.
+
+Never store plaintext long-lived tokens for later retrieval.
+
+---
+
+## Secrets and configuration
+
+Secrets include:
+
+- token-signing private key;
+- password pepper;
+- database password;
+- SMTP password;
+- SMS credential;
+- cookie encryption key;
+- service-credential hashing secret.
+
+Use a managed secret store, separate values by environment, rotate, validate at startup, and never log them.
+
+---
+
+## Email and SMS provider security
+
+### Email
+
+- scoped provider credentials;
+- SPF, DKIM, and DMARC;
+- safe templates;
+- no token logging;
+- bounce and abuse monitoring.
+
+### SMS
+
+- destination and region restrictions;
+- spending caps;
+- signed provider callbacks;
+- toll-fraud monitoring;
+- no sensitive message content.
+
+---
+
+## Logging and security audit
+
+Audit events should include:
+
+- registration;
+- verification;
+- login success/failure;
+- refresh;
+- reuse detection;
+- logout;
+- reset;
+- MFA changes;
+- role and membership changes;
+- service credential issuance/revocation;
+- administrative recovery.
+
+Redact:
+
+- passwords;
+- tokens;
+- OTPs;
+- MFA secrets;
+- cookies;
+- full phone/email where not required.
+
+---
+
+## Privacy and minimization
+
+Token claims should contain only the identity and authorization context needed by consuming services.
+
+Do not put in tokens:
+
+- national identifiers;
+- full device identifiers;
+- ownership history;
+- police data;
+- private contact information beyond a justified need.
+
+Session metadata should be minimized and time-bounded.
+
+---
+
+## Retention and deletion
+
+| Data | Retention consideration |
+|---|---|
+| Account | Account lifecycle |
+| Password hash | Current credential |
+| Session | Active plus investigation window |
+| Refresh-token hash | Session duration |
+| Reset/verification challenge | Short TTL |
+| OTP | Minutes |
+| Security event | Longer security/legal period |
+| Device/IP metadata | Minimized and time-bounded |
+
+Deletion must preserve required audit and legal obligations.
+
+---
+
+## Availability and resilience
+
+Use:
+
+- database pool limits;
+- shared rate limits;
+- provider timeouts;
+- queues for email and SMS;
+- health/readiness checks;
+- graceful shutdown;
+- token-key cache with safe rotation;
+- backpressure.
+
+Provider outage must not bypass verification or MFA.
+
+---
+
+## Dependency and supply-chain security
+
+- lock dependencies;
+- scan for vulnerabilities;
+- minimize authentication and crypto dependencies;
+- monitor advisories;
+- run secret scanning;
+- produce an SBOM;
+- sign or verify build artifacts;
+- remove unused packages.
+
+---
+
+## CI/CD security
+
+- protected branches;
+- required security tests;
+- secret scanning;
+- SAST;
+- dependency and container scanning;
+- environment approval;
+- least-privilege CI credentials;
+- no production token-signing administration in untrusted pull-request jobs.
+
+Authentication changes require focused review.
+
+---
+
+## Container and runtime hardening
+
+- non-root runtime;
+- minimal base image;
+- read-only filesystem where practical;
+- debug disabled;
+- production mode;
+- restricted egress;
+- resource limits;
+- runtime-mounted secrets;
+- TLS and time synchronization.
+
+---
+
+## Environment separation
+
+Use separate:
+
+- databases;
+- token-signing keys;
+- email and SMS credentials;
+- cookie domains;
+- frontend origins;
+- service credentials;
+- audit sinks.
+
+Never use production accounts or tokens in tests.
+
+---
+
+## Security testing
+
+### Account attacks
+
+- enumeration;
+- brute force;
+- credential stuffing;
+- registration abuse;
+- reset abuse;
+- OTP abuse.
+
+### Tokens
+
+- wrong audience;
+- wrong issuer;
+- expiry;
+- wrong token type;
+- algorithm confusion;
+- refresh reuse;
+- concurrent refresh;
+- key rotation.
+
+### MFA and recovery
+
+- replayed TOTP;
+- reused recovery code;
+- factor removal without step-up;
+- support recovery bypass;
+- passkey-origin mismatch.
+
+### Authorization
+
+- self-grant role;
+- cross-organization membership;
+- service scope escalation;
+- deactivated account.
+
+### Resilience
+
+- provider outage;
+- database failure;
+- audit failure;
+- signing-key rotation failure.
+
+---
+
+## Threat scenarios
+
+### Credential stuffing
+
+Mitigations:
+
+- compromised-password screening;
+- throttling;
+- risk signals;
+- MFA;
+- alerts.
+
+### Refresh-token theft
+
+Mitigations:
+
+- hash storage;
+- rotation;
+- reuse detection;
+- session revocation;
+- secure cookie or client storage.
+
+### SIM swap
+
+Mitigations:
+
+- do not rely solely on SMS for privileged recovery;
+- require another factor or review.
+
+### Malicious support recovery
+
+Mitigations:
+
+- role separation;
+- evidence;
+- delay;
+- audit;
+- user notification.
+
+### Token-signing-key compromise
+
+Mitigations:
+
+- KMS/HSM;
+- rotation;
+- emergency revocation;
+- short token TTL;
+- consumer notification.
+
+### Stale role token
+
+Mitigations:
+
+- short access-token TTL;
+- current membership checks for sensitive operations;
+- invalidation events.
+
+---
+
+## Incident response
+
+### Account takeover
+
+1. revoke active sessions;
+2. freeze risky changes;
+3. reset credentials;
+4. inspect security events;
+5. restore verified contacts;
+6. notify the user;
+7. investigate the source.
+
+### Refresh-token reuse
+
+- revoke the family;
+- revoke the session;
+- record and alert;
+- require login;
+- inspect related sessions.
+
+### Token-signing-key compromise
+
+- stop issuance with the compromised key;
+- rotate and publish new verification keys;
+- reject the compromised key ID where architecture permits;
+- revoke sessions/tokens as appropriate;
+- notify all consuming services;
+- inspect forged-token exposure.
+
+### Provider compromise
+
+- revoke provider credential;
+- stop affected delivery;
+- assess token/message exposure;
+- rotate relevant secrets;
+- monitor affected accounts.
+
+### Privileged-account compromise
+
+- suspend account;
+- revoke all sessions;
+- inspect actions;
+- revert unauthorized role changes;
+- preserve audit;
+- initiate the formal incident process.
+
+---
+
+## Monitoring and alerting
+
+Alert on:
+
+- login-failure spikes;
+- password spraying;
+- reset and OTP spikes;
+- refresh-token reuse;
+- new privileged role assignment;
+- MFA removal;
+- unusual administrator login;
+- provider credential failure;
+- token-signing-key access anomaly;
+- audit-write failure;
+- elevated `401`, `403`, `429`, and `5xx`.
+
+---
+
+## Vulnerability reporting
+
+Replace these placeholders:
+
+```text
+SECURITY_CONTACT=TBD
+IDENTITY_SECURITY_OWNER=TBD
+ON_CALL=TBD
+```
+
+Do not open a public issue for a vulnerability involving credentials, sessions, or user data.
+
+---
+
+## Security review checklist
+
+- [ ] Generic authentication errors
+- [ ] Modern password hashing
+- [ ] Compromised-password screening
+- [ ] Short access-token lifetime
+- [ ] Refresh tokens hashed
+- [ ] Rotation and reuse detection
+- [ ] Reset and verification tokens hashed
+- [ ] OTP rate-limited
+- [ ] MFA for privileged users
+- [ ] Roles cannot be self-granted
+- [ ] Service identities scoped
+- [ ] Signing keys protected
+- [ ] Sessions revocable
+- [ ] Security audit durable
+- [ ] Providers secured
+- [ ] Abuse tests present
+- [ ] Incident playbooks current
+
+---
+
+## Source reconciliation checklist
+
+### Source
+
+- [ ] runtime and framework
+- [ ] routes and public endpoints
+- [ ] password hashing
+- [ ] access-token format
+- [ ] refresh storage and rotation
+- [ ] session model
+- [ ] verification and reset
+- [ ] OTP and MFA
+- [ ] roles and memberships
+- [ ] service identities
+- [ ] database
+- [ ] configuration
+- [ ] providers
+- [ ] audit
+- [ ] CI and tests
+- [ ] vulnerability contact
+
+### Gap analysis
+
+- [ ] label every control as implemented, partial, planned, not applicable, or unknown
+- [ ] document current weaknesses
+- [ ] remove non-applicable controls
+- [ ] link supporting tests
+- [ ] assign remediation owners and deadlines
+
+---
+
+## Production-hardening roadmap
+
+### Priority 0
+
+- [ ] Reconcile source
+- [ ] Modern password hashing
+- [ ] Hash all long-lived tokens
+- [ ] Refresh rotation and reuse detection
+- [ ] Generic public errors
+- [ ] Distributed throttling
+- [ ] Reset revokes sessions
+- [ ] Durable security audit
+- [ ] Health/readiness
+
+### Priority 1
+
+- [ ] MFA for privileged roles
+- [ ] Passkeys/WebAuthn
+- [ ] KMS/asymmetric token signing
+- [ ] service JWT or mTLS
+- [ ] compromised-password screening
+- [ ] reviewed account recovery
+- [ ] SIEM alerts
+
+### Priority 2
+
+- [ ] automated signing-key rotation
+- [ ] advanced account-takeover detection
+- [ ] formal threat model
+- [ ] penetration test
+- [ ] privacy assessment
+- [ ] disaster-recovery exercise
+- [ ] SBOM and artifact signing
+
+---
+
+## Document maintenance
+
+Review at least quarterly and whenever:
+
+- the token model changes;
+- password hashing changes;
+- MFA or recovery changes;
+- a public authentication route is added;
+- an email or SMS provider changes;
+- the role model changes;
+- a security incident occurs;
+- a penetration test finds a material issue.
+
+---
+
+<div align="center">
+
+Mucyora authentication is trustworthy only when credentials, sessions, recovery, roles, service identities, and security events are protected as one lifecycle.
+
+</div>
