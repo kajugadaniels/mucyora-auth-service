@@ -10,6 +10,7 @@ import { JsonLogger } from './common/logging/json.logger';
 import { buildCorsOptions } from './common/security/cors.config';
 import { createDocsBasicAuthMiddleware } from './common/security/docs-basic-auth.middleware';
 import { setupAuthSwagger } from './openapi';
+import { shutdownTelemetry } from './telemetry';
 
 const AUTH_SERVICE_PORT = 3000;
 const REQUEST_BODY_LIMIT = '256kb';
@@ -88,3 +89,8 @@ bootstrap().catch((error: unknown) => {
   );
   process.exitCode = 1;
 });
+
+for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+  process.once(signal, () => void shutdownTelemetry());
+}
+import './telemetry';
