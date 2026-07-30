@@ -29,6 +29,7 @@ This directory is the operational and engineering reference for `api/auth`.
 23. [Compatibility removal plan](compatibility-removal-plan.md)
 24. [Release readiness](release-readiness.md)
 25. [OpenAPI and API versioning](openapi-and-versioning.md)
+26. [Advanced Auth hardening](advanced-auth-hardening.md)
 
 ## Implementation Planning
 
