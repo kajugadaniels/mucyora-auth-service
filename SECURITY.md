@@ -219,6 +219,18 @@ committed OpenAPI contract contains only fictional Rwanda-specific examples.
 Real names, NIDs, telephone numbers, emails, tokens, credentials, and provider
 responses are forbidden in generated or hand-written API documentation.
 
+AWS KMS signing mode grants the workload only `kms:Sign`; private signing
+material never enters Auth. Passkey challenges are single-use and origin/RP
+bound, credential private keys remain on authenticators, and recovery codes are
+stored only as keyed digests. New-device or changed-context logins receive
+limited sessions until existing step-up verification succeeds.
+
+Compromised-password screening sends only a five-character SHA-1 prefix to a
+fixed HTTPS range endpoint with padded responses and bounded timeout. Full
+hashes and plaintext passwords never leave Auth. OpenTelemetry exporters must
+exclude bodies, authorization headers, cookies, identity values, tokens, and
+private object references.
+
 ## Database Safety
 
 Auth imports database behavior only from `@mucyora/db`. This repository must
