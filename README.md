@@ -244,3 +244,9 @@ Swagger UI is available at `/api/docs` and JSON at `/api/docs-json` only when
 explicitly enabled. `contracts/openapi.json` is the versioned release artifact;
 CI rejects drift. All documentation identities are fictional Rwanda-specific
 examples and must never be replaced with real personal information.
+
+Advanced hardening improvements 8–14 add PostgreSQL/Redis readiness, optional
+AWS KMS JWT signing, OpenTelemetry export, risk-based limited sessions,
+WebAuthn passkey enrollment, digest-only recovery codes, k-anonymity
+compromised-password screening, and an immutable-release evidence gate.
+External exercises still require approved operator infrastructure.
