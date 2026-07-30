@@ -23,6 +23,7 @@ import { SecurityEventsModule } from './modules/security-events/security-events.
 import { SessionsModule } from './modules/sessions/sessions.module';
 import { StepUpVerificationModule } from './modules/step-up-verification/step-up-verification.module';
 import { OperationsModule } from './modules/operations/operations.module';
+import { PasskeyModule } from './modules/passkeys/passkey.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { OperationsModule } from './modules/operations/operations.module';
     SecurityEventsModule,
     StepUpVerificationModule,
     OperationsModule,
+    PasskeyModule,
     HealthModule,
     CommonModule,
   ],
