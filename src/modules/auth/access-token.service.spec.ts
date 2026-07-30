@@ -20,6 +20,7 @@ describe('AccessTokenService', () => {
       MUCYORA_AUTH_SIGNING_PRIVATE_KEY: keys.privateKey,
       MUCYORA_AUTH_SIGNING_PUBLIC_KEY: keys.publicKey,
       MUCYORA_AUTH_SIGNING_KEY_ID: 'test-key-2026',
+      MUCYORA_AUTH_SIGNING_PROVIDER: 'SOFTWARE_PEM',
       MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON: JSON.stringify([
         { keyId: 'test-key-2025', publicKey: previousKeys.publicKey },
       ]),
@@ -30,8 +31,8 @@ describe('AccessTokenService', () => {
     }),
   );
 
-  it('issues and verifies minimized asymmetric full-session claims', () => {
-    const issued = service.issue({
+  it('issues and verifies minimized asymmetric full-session claims', async () => {
+    const issued = await service.issue({
       userId: 'user-1',
       sessionId: 'session-1',
       sessionLevel: SessionLevel.FULL,
@@ -51,8 +52,8 @@ describe('AccessTokenService', () => {
     expect(JSON.stringify(claims)).not.toContain('dateOfBirth');
   });
 
-  it('issues limited claims and rejects tampering', () => {
-    const issued = service.issue({
+  it('issues limited claims and rejects tampering', async () => {
+    const issued = await service.issue({
       userId: 'user-1',
       sessionId: 'session-1',
       sessionLevel: SessionLevel.LIMITED,
