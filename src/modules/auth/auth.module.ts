@@ -11,6 +11,7 @@ import { SessionLevelGuard } from './session-level.guard';
 import { SessionUpgradeController } from './session-upgrade.controller';
 import { SessionUpgradeGuard } from './session-upgrade.guard';
 import { SessionUpgradeService } from './session-upgrade.service';
+import { LoginRiskService } from './login-risk.service';
 
 @Module({
   imports: [IntegrationsModule, SecurityEventsModule],
@@ -23,6 +24,7 @@ import { SessionUpgradeService } from './session-upgrade.service';
     AuthRateLimiter,
     AuthenticationService,
     SessionUpgradeService,
+    LoginRiskService,
   ],
   exports: [AccessTokenService, AccessAuthGuard, SessionLevelGuard],
 })
