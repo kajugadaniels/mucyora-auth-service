@@ -276,7 +276,7 @@ export class SessionUpgradeService {
       });
     }
 
-    const access = this.accessTokens.issue({
+    const access = await this.accessTokens.issue({
       userId: result.userId,
       sessionId: result.sessionId,
       sessionLevel: SessionLevel.FULL,
