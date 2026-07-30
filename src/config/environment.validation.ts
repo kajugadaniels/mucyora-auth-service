@@ -11,6 +11,11 @@ const environmentSchema = Joi.object({
   LOG_LEVEL: Joi.string()
     .valid('error', 'warn', 'log', 'debug', 'verbose')
     .default('log'),
+  OTEL_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+  OTEL_SERVICE_NAME: Joi.string()
+    .pattern(/^[A-Za-z0-9._-]{1,64}$/)
+    .default('mucyora-auth'),
+  OTEL_EXPORTER_OTLP_ENDPOINT: Joi.string().uri().allow('').default(''),
   CORS_ALLOWED_ORIGINS: Joi.string().default('http://localhost:4000'),
   ENABLE_SWAGGER: Joi.boolean().truthy('true').falsy('false').default(false),
   DOCS_BASIC_AUTH_USER: Joi.string().allow('').default(''),
@@ -20,6 +25,10 @@ const environmentSchema = Joi.object({
     .min(250)
     .max(30_000)
     .default(5_000),
+  READINESS_REDIS_REQUIRED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(true),
   IDENTITY_ENCRYPTION_PROVIDER: Joi.string()
     .valid('SOFTWARE_GCM')
     .default('SOFTWARE_GCM'),
@@ -108,6 +117,18 @@ const environmentSchema = Joi.object({
     .min(1)
     .max(16)
     .default(4),
+  COMPROMISED_PASSWORD_CHECK_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+  COMPROMISED_PASSWORD_API_URL: Joi.string()
+    .uri()
+    .default('https://api.pwnedpasswords.com/range'),
+  COMPROMISED_PASSWORD_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(250)
+    .max(10_000)
+    .default(2_000),
   PASSWORD_RESET_TOKEN_TTL_SECONDS: Joi.number()
     .integer()
     .min(300)
@@ -163,8 +184,12 @@ const environmentSchema = Joi.object({
   MUCYORA_AUTH_SIGNING_KEY_ID: Joi.string()
     .pattern(/^[A-Za-z0-9._:-]{8,128}$/)
     .required(),
-  MUCYORA_AUTH_SIGNING_PRIVATE_KEY: Joi.string().min(256).required(),
+  MUCYORA_AUTH_SIGNING_PROVIDER: Joi.string()
+    .valid('SOFTWARE_PEM', 'AWS_KMS')
+    .default('SOFTWARE_PEM'),
+  MUCYORA_AUTH_SIGNING_PRIVATE_KEY: Joi.string().allow('').default(''),
   MUCYORA_AUTH_SIGNING_PUBLIC_KEY: Joi.string().min(128).required(),
+  MUCYORA_AUTH_KMS_KEY_ID: Joi.string().allow('').max(512).default(''),
   MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON: Joi.string()
     .max(32_768)
     .default('[]'),
@@ -203,6 +228,15 @@ const environmentSchema = Joi.object({
   REFRESH_COOKIE_NAME: Joi.string()
     .pattern(/^[A-Za-z0-9_-]{1,64}$/)
     .default('mucyora_refresh'),
+  PASSKEY_RP_ID: Joi.string().hostname().default('localhost'),
+  PASSKEY_RP_NAME: Joi.string().min(1).max(100).default('MUCYORA'),
+  PASSKEY_ALLOWED_ORIGINS: Joi.string().default('http://localhost:4000'),
+  PASSKEY_CHALLENGE_TTL_SECONDS: Joi.number()
+    .integer()
+    .min(60)
+    .max(600)
+    .default(300),
+  RECOVERY_CODE_COUNT: Joi.number().integer().min(6).max(12).default(8),
   CSRF_COOKIE_NAME: Joi.string()
     .pattern(/^[A-Za-z0-9_-]{1,64}$/)
     .default('mucyora_csrf'),
@@ -343,11 +377,15 @@ export interface AuthEnvironment {
   APP_ENV: 'development' | 'test' | 'production';
   DATABASE_URL: string;
   LOG_LEVEL: 'error' | 'warn' | 'log' | 'debug' | 'verbose';
+  OTEL_ENABLED: boolean;
+  OTEL_SERVICE_NAME: string;
+  OTEL_EXPORTER_OTLP_ENDPOINT: string;
   CORS_ALLOWED_ORIGINS: string;
   ENABLE_SWAGGER: boolean;
   DOCS_BASIC_AUTH_USER: string;
   DOCS_BASIC_AUTH_PASS: string;
   READINESS_CACHE_TTL_MS: number;
+  READINESS_REDIS_REQUIRED: boolean;
   IDENTITY_ENCRYPTION_PROVIDER: 'SOFTWARE_GCM';
   IDENTITY_ENCRYPTION_KEY_VERSION: string;
   IDENTITY_ENCRYPTION_SECRET: string;
@@ -376,6 +414,9 @@ export interface AuthEnvironment {
   PASSWORD_ARGON2_TIME_COST: number;
   PASSWORD_ARGON2_PARALLELISM: number;
   PASSWORD_HASH_MAX_CONCURRENCY: number;
+  COMPROMISED_PASSWORD_CHECK_ENABLED: boolean;
+  COMPROMISED_PASSWORD_API_URL: string;
+  COMPROMISED_PASSWORD_TIMEOUT_MS: number;
   PASSWORD_RESET_TOKEN_TTL_SECONDS: number;
   PASSWORD_RESET_LIMIT_PER_HOUR: number;
   PASSWORD_CHANGE_LIMIT_PER_HOUR: number;
@@ -398,8 +439,10 @@ export interface AuthEnvironment {
   MUCYORA_AUTH_ISSUER: string;
   MUCYORA_AUTH_ACCESS_AUDIENCES: string;
   MUCYORA_AUTH_SIGNING_KEY_ID: string;
+  MUCYORA_AUTH_SIGNING_PROVIDER: 'SOFTWARE_PEM' | 'AWS_KMS';
   MUCYORA_AUTH_SIGNING_PRIVATE_KEY: string;
   MUCYORA_AUTH_SIGNING_PUBLIC_KEY: string;
+  MUCYORA_AUTH_KMS_KEY_ID: string;
   MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON: string;
   ACCESS_TOKEN_TTL_SECONDS: number;
   LIMITED_ACCESS_TOKEN_TTL_SECONDS: number;
@@ -414,6 +457,11 @@ export interface AuthEnvironment {
   COOKIE_SECURE: boolean;
   COOKIE_SAME_SITE: 'lax' | 'strict' | 'none';
   REFRESH_COOKIE_NAME: string;
+  PASSKEY_RP_ID: string;
+  PASSKEY_RP_NAME: string;
+  PASSKEY_ALLOWED_ORIGINS: string;
+  PASSKEY_CHALLENGE_TTL_SECONDS: number;
+  RECOVERY_CODE_COUNT: number;
   CSRF_COOKIE_NAME: string;
   AWS_REGION: string;
   AWS_S3_VERIFICATION_BUCKET: string;
@@ -496,6 +544,11 @@ export function validateEnvironment(
 
   if (environment.APP_ENV === 'production') {
     assertRuntimeDatabaseRole(environment.DATABASE_URL);
+    if (!environment.READINESS_REDIS_REQUIRED) {
+      throw new Error(
+        'Auth environment validation failed: production readiness must require Redis',
+      );
+    }
   }
 
   assertEncodedKeys(environment);
@@ -504,8 +557,44 @@ export function validateEnvironment(
   assertMailConfiguration(environment);
   assertAuthSigningConfiguration(environment);
   assertVerificationConfiguration(environment);
+  assertAdvancedSecurityConfiguration(environment);
 
   return environment;
+}
+
+function assertAdvancedSecurityConfiguration(
+  environment: AuthEnvironment,
+): void {
+  const origins = environment.PASSKEY_ALLOWED_ORIGINS.split(',').map(
+    (origin) => new URL(origin.trim()),
+  );
+  if (
+    environment.APP_ENV === 'production' &&
+    (environment.PASSKEY_RP_ID === 'localhost' ||
+      origins.some((origin) => origin.protocol !== 'https:'))
+  ) {
+    throw new Error(
+      'Auth environment validation failed: production passkeys require a non-local RP ID and HTTPS origins',
+    );
+  }
+  if (
+    environment.COMPROMISED_PASSWORD_CHECK_ENABLED &&
+    new URL(environment.COMPROMISED_PASSWORD_API_URL).protocol !== 'https:'
+  ) {
+    throw new Error(
+      'Auth environment validation failed: compromised-password screening requires HTTPS',
+    );
+  }
+  if (
+    environment.APP_ENV === 'production' &&
+    environment.OTEL_ENABLED &&
+    (!environment.OTEL_EXPORTER_OTLP_ENDPOINT ||
+      new URL(environment.OTEL_EXPORTER_OTLP_ENDPOINT).protocol !== 'https:')
+  ) {
+    throw new Error(
+      'Auth environment validation failed: production telemetry requires an HTTPS OTLP endpoint',
+    );
+  }
 }
 
 function assertVerificationConfiguration(environment: AuthEnvironment): void {
@@ -567,28 +656,30 @@ function assertVerificationConfiguration(environment: AuthEnvironment): void {
 
 function assertAuthSigningConfiguration(environment: AuthEnvironment): void {
   try {
-    const privateKey = createPrivateKey(
-      environment.MUCYORA_AUTH_SIGNING_PRIVATE_KEY,
-    );
     const publicKey = createPublicKey(
       environment.MUCYORA_AUTH_SIGNING_PUBLIC_KEY,
     );
-    if (
-      privateKey.asymmetricKeyType !== 'rsa' ||
-      publicKey.asymmetricKeyType !== 'rsa'
-    ) {
+    if (publicKey.asymmetricKeyType !== 'rsa') {
       throw new Error('RSA keys required');
     }
-    const probe = Buffer.from('mucyora-auth-signing-key-pair-check');
-    if (
-      !verify(
-        'RSA-SHA256',
-        probe,
-        publicKey,
-        sign('RSA-SHA256', probe, privateKey),
-      )
-    ) {
-      throw new Error('Signing key pair does not match');
+    if (environment.MUCYORA_AUTH_SIGNING_PROVIDER === 'SOFTWARE_PEM') {
+      const privateKey = createPrivateKey(
+        environment.MUCYORA_AUTH_SIGNING_PRIVATE_KEY,
+      );
+      const probe = Buffer.from('mucyora-auth-signing-key-pair-check');
+      if (
+        privateKey.asymmetricKeyType !== 'rsa' ||
+        !verify(
+          'RSA-SHA256',
+          probe,
+          publicKey,
+          sign('RSA-SHA256', probe, privateKey),
+        )
+      ) {
+        throw new Error('Signing key pair does not match');
+      }
+    } else if (!environment.MUCYORA_AUTH_KMS_KEY_ID) {
+      throw new Error('KMS key ID required');
     }
     if (
       environment.MUCYORA_AUTH_ACCESS_AUDIENCES.split(',')
