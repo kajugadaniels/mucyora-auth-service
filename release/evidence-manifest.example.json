@@ -1,0 +1,20 @@
+{
+  "releaseCandidate": "sha256:replace-with-immutable-image-digest",
+  "environment": "approved-staging",
+  "completedAt": "2026-07-30T00:00:00.000Z",
+  "approvers": ["auth-owner", "security-owner", "platform-owner"],
+  "gates": {
+    "stagingLoad": "PENDING",
+    "stagingSoak": "PENDING",
+    "queryPlans": "PENDING",
+    "databaseRestore": "PENDING",
+    "jwtRotation": "PENDING",
+    "nidaRotation": "PENDING",
+    "engineRotation": "PENDING",
+    "iamLeastPrivilege": "PENDING",
+    "tlsPrivateNetworking": "PENDING",
+    "alertDelivery": "PENDING",
+    "penetrationReview": "PENDING"
+  },
+  "evidenceReferences": []
+}
