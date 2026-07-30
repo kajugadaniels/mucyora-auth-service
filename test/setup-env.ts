@@ -20,6 +20,7 @@ process.env.TOKEN_DIGEST_HMAC_KEY =
 process.env.REQUEST_CONTEXT_HMAC_KEY =
   'AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM';
 process.env.REDIS_URL = 'redis://localhost:6379';
+process.env.READINESS_REDIS_REQUIRED = 'false';
 process.env.CITIZEN_API_URL = 'http://localhost:3100/citizens/lookup';
 process.env.CITIZEN_API_USERNAME = 'test-client';
 process.env.CITIZEN_API_PASSWORD = 'test-password';
@@ -43,6 +44,7 @@ process.env.MUCYORA_USER_APP_URL = 'http://localhost:4000';
 process.env.MUCYORA_AUTH_ISSUER = 'http://localhost:3000';
 process.env.MUCYORA_AUTH_ACCESS_AUDIENCES = 'mucyora-user,mucyora-signature';
 process.env.MUCYORA_AUTH_SIGNING_KEY_ID = 'test-key-2026';
+process.env.MUCYORA_AUTH_SIGNING_PROVIDER = 'SOFTWARE_PEM';
 process.env.MUCYORA_AUTH_SIGNING_PRIVATE_KEY = testSigningKeys.privateKey;
 process.env.MUCYORA_AUTH_SIGNING_PUBLIC_KEY = testSigningKeys.publicKey;
 process.env.MUCYORA_AUTH_PREVIOUS_SIGNING_PUBLIC_KEYS_JSON = '[]';
