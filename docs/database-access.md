@@ -59,6 +59,8 @@ The shared schema now defines:
 - `AuthSecurityEvent`;
 - `IdempotencyRecord`;
 - `OutboxEvent`.
+- passkey public credentials and digest-only account recovery codes;
+- risk classification on Auth sessions.
 
 Legacy fields and tables remain temporarily for compatible rollout. New Auth
 code must use the Phase 2 fields and must not write new plaintext or ordinary
